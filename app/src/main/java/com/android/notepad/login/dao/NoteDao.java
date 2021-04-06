@@ -14,6 +14,7 @@ public class NoteDao {
     private static NoteDao noteDao;
     NoteDatabaseHelper noteDatabaseHelper;
     SQLiteDatabase db;
+//    List<Note> noteList = new ArrayList<>();
     public static NoteDao getInstance() {
         if (noteDao == null) {
             noteDao = new NoteDao();

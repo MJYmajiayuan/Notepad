@@ -3,12 +3,14 @@ package com.android.notepad;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import com.android.notepad.login.model.Note;
@@ -16,6 +18,7 @@ import com.android.notepad.ui.edit.EditActivity;
 import com.android.notepad.ui.home.NoteAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar myToolbar;
     private FloatingActionButton editBtn;
     private RecyclerView noteRecycler;
-    private List<Note> noteList;
+//    private List<Note> noteList;
     private MainViewModel mainViewModel;
 
     @Override
@@ -42,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager= new StaggeredGridLayoutManager(2,
                 StaggeredGridLayoutManager.VERTICAL);   // 瀑布流布局
         noteRecycler.setLayoutManager(layoutManager);
-        NoteAdapter noteAdapter = new NoteAdapter(this, noteList);
+        NoteAdapter noteAdapter = new NoteAdapter(this, mainViewModel.noteList);
         noteRecycler.setAdapter(noteAdapter);
 
         editBtn.setOnClickListener(new View.OnClickListener() {
@@ -52,6 +55,21 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        mainViewModel.noteLiveData.observe(this, new Observer<List<Note>>() {
+            @Override
+            public void onChanged(List<Note> notes) {
+                Log.d("MainActivity", "onChange");
+                noteAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("MainActivity", "onResume refresh");
+        mainViewModel.refreshNoteList();
     }
 
     @Override
@@ -59,13 +77,19 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    /**
+     * 初始化控件
+     */
     private void initComponents() {
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         editBtn = (FloatingActionButton) findViewById(R.id.edit_btn);
         noteRecycler = (RecyclerView) findViewById(R.id.note_recycler_view);
     }
 
+    /**
+     * 初始化数据
+     */
     private void initNotes() {
-        noteList = mainViewModel.queryNote();
+        mainViewModel.noteList.addAll(mainViewModel.queryNote());
     }
 }

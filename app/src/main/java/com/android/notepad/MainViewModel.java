@@ -8,11 +8,12 @@ import androidx.lifecycle.ViewModel;
 import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainViewModel extends ViewModel {
     MutableLiveData<List<Note>> noteLiveData = new MutableLiveData<>();
-    List<Note> noteList;
+    List<Note> noteList = new ArrayList<>();
 
     public void createNoteDatabase(Context context) {
         Repository.getInstance().createNoteDatabase(context);
@@ -27,7 +28,8 @@ public class MainViewModel extends ViewModel {
     }
 
     public void refreshNoteList() {
-        noteList = queryNote();
+        noteList.clear();
+        noteList.addAll(queryNote());
         noteLiveData.setValue(noteList);
     }
 }
