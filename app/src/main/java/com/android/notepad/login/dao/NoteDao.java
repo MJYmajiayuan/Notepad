@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.android.notepad.login.model.Note;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class NoteDao {
@@ -31,6 +32,17 @@ public class NoteDao {
         values.put("content", note.getContent());
         values.put("time", note.getTime().toString());
         db.insert("Note", null, values);
+    }
+
+    public void updateNote(Note note) {
+        ContentValues values = new ContentValues();
+        values.put("content", note.getContent());
+        values.put("time", note.getTime().toString());
+        db.update("Note", values, "id = ?", new String[] { String.valueOf(note.getId()) });
+    }
+
+    public void deleteNote(Note note) {
+        db.delete("Note", "id = ?", new String[] { String.valueOf(note.getId()) });
     }
 
     public List<Note> queryNote() {

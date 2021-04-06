@@ -24,6 +24,14 @@ public class Repository {
         NoteDao.getInstance().insertNote(note);
     }
 
+    public void updateNote(Note note) {
+        NoteDao.getInstance().updateNote(note);
+    }
+
+    public void deleteNote(Note note) {
+        NoteDao.getInstance().deleteNote(note);
+    }
+
     public List<Note> queryNote() {
         return NoteDao.getInstance().queryNote();
     }

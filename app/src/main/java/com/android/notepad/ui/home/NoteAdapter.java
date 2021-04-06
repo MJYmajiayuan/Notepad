@@ -14,7 +14,7 @@ import com.android.notepad.login.model.Note;
 
 import java.util.List;
 
-public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
+public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> implements View.OnClickListener {
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -28,6 +28,14 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         }
     }
 
+    /**
+     * 定义点击事件回调接口
+     */
+    public interface OnItemClickListener {
+        void onItemClick(RecyclerView parent, View view, int position, Note note);
+    }
+
+    private OnItemClickListener onItemClickListener;
     private List<Note> noteList;
     private Context context;
 
@@ -40,6 +48,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.note_item, parent, false);
+        // 绑定监听事件
+        view.setOnClickListener(this);
         return new ViewHolder(view);
     }
 
@@ -48,6 +58,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         Note note = noteList.get(position);
         holder.contentText.setText(note.getContent());
         holder.timeText.setText(note.getTime());
+        // 保存position
+        holder.itemView.setTag(position);
     }
 
     @Override
@@ -55,6 +67,19 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         return noteList.size();
     }
 
+    /**
+     * 提供set方法
+     * @param onItemClickListener
+     */
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
 
-
+    @Override
+    public void onClick(View v) {
+        if (onItemClickListener != null) {
+            int position = (int) v.getTag();
+            onItemClickListener.onItemClick((RecyclerView) v.getParent(), v, position, noteList.get(position));
+        }
+    }
 }

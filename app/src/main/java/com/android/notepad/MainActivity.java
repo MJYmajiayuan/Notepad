@@ -48,10 +48,14 @@ public class MainActivity extends AppCompatActivity {
         NoteAdapter noteAdapter = new NoteAdapter(this, mainViewModel.noteList);
         noteRecycler.setAdapter(noteAdapter);
 
+        /**
+         * 悬浮按钮点击事件，点击后进入编辑界面
+         */
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
+                intent.putExtra("tag", "insert");   // 表示这是个插入操作
                 startActivity(intent);
             }
         });
@@ -61,6 +65,20 @@ public class MainActivity extends AppCompatActivity {
             public void onChanged(List<Note> notes) {
                 Log.d("MainActivity", "onChange");
                 noteAdapter.notifyDataSetChanged();
+            }
+        });
+
+        /**
+         * 设置item的点击事件
+         */
+        noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(RecyclerView parent, View view, int position, Note note) {
+                Log.d("MainActivity", "onItemClick, " + position + ", " + note.getContent());
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+                intent.putExtra("tag", "update");   // 表示这是个更新操作
+                intent.putExtra("note", note);
+                startActivity(intent);
             }
         });
     }
