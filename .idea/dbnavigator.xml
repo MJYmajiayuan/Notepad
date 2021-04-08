@@ -88,7 +88,7 @@
           <port value="1234" />
           <database value="database" />
           <files>
-            <file path="F:\Andorid\db\note_store2.db" schema="main" />
+            <file path="F:\Andorid\db\note_store.db" schema="main" />
           </files>
           <type value="NONE" />
           <user value="" />

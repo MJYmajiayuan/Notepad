@@ -11,7 +11,8 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
     private String createBook = "create table Note (" +
             "id integer primary key autoincrement," +
             "content text," +
-            "time text)";
+            "time text," +
+            "timestamp bigint)";
 
     public NoteDatabaseHelper(@Nullable Context context, @Nullable String name,
                               @Nullable SQLiteDatabase.CursorFactory factory, int version) {
@@ -25,6 +26,8 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        if (oldVersion <= 1) {
+            db.execSQL("alter table Note add column timestamp bigint");
+        }
     }
 }
