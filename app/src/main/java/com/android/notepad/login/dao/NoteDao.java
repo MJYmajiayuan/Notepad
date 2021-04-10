@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.android.notepad.login.model.Note;
 
@@ -28,7 +29,7 @@ public class NoteDao {
      * @param context
      */
     public void createNoteDatabase(Context context) {
-        noteDatabaseHelper = new NoteDatabaseHelper(context, "note_store.db", null, 2);
+        noteDatabaseHelper = new NoteDatabaseHelper(context, "note_store.db", null, 3);
         db = noteDatabaseHelper.getWritableDatabase();
     }
 
@@ -41,6 +42,7 @@ public class NoteDao {
         values.put("content", note.getContent());
         values.put("time", note.getTime().toString());
         values.put("timestamp", note.getTimestamp());
+        values.put("image", note.getImage());
         db.insert("Note", null, values);
     }
 
@@ -53,6 +55,7 @@ public class NoteDao {
         values.put("content", note.getContent());
         values.put("time", note.getTime().toString());
         values.put("timestamp", note.getTimestamp());
+        values.put("image", note.getImage());
         db.update("Note", values, "id = ?", new String[] { String.valueOf(note.getId()) });
     }
 
@@ -77,11 +80,33 @@ public class NoteDao {
                 String content = cursor.getString(cursor.getColumnIndex("content"));
                 String time = cursor.getString(cursor.getColumnIndex("time"));
                 long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
-                Note note = new Note(id, content, time, timestamp);
+                byte[] image = cursor.getBlob(cursor.getColumnIndex("image"));
+                Note note = new Note(id, content, time, timestamp, image);
                 noteList.add(note);
             } while (cursor.moveToPrevious());
         }
         cursor.close();
         return noteList;
+    }
+
+    /**
+     * 通过id查询
+     * @param id
+     * @return
+     */
+    public Note queryNoteById(int id) {
+        Note note = new Note();
+//        System.out.println("id = " + id);
+        Cursor cursor = db.query("Note", null, "id=?",
+                new String[] { String.valueOf(id) }, null, null, null);
+        if (cursor.moveToFirst()) {
+            note.setId(cursor.getInt(cursor.getColumnIndex("id")));
+            note.setContent(cursor.getString(cursor.getColumnIndex("content")));
+            note.setTime(cursor.getString(cursor.getColumnIndex("time")));
+            note.setTimestamp(cursor.getLong(cursor.getColumnIndex("timestamp")));
+            note.setImage(cursor.getBlob(cursor.getColumnIndex("image")));
+        }
+        cursor.close();
+        return note;
     }
 }

@@ -35,4 +35,8 @@ public class Repository {
     public List<Note> queryNote() {
         return NoteDao.getInstance().queryNote();
     }
+
+    public Note queryNoteById(int id) {
+        return NoteDao.getInstance().queryNoteById(id);
+    }
 }

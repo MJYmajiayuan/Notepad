@@ -32,7 +32,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> im
      * 定义点击事件回调接口
      */
     public interface OnItemClickListener {
-        void onItemClick(RecyclerView parent, View view, int position, Note note);
+        void onItemClick(RecyclerView parent, View view, int position, int noteId);
     }
 
     private OnItemClickListener onItemClickListener;
@@ -79,7 +79,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> im
     public void onClick(View v) {
         if (onItemClickListener != null) {
             int position = (int) v.getTag();
-            onItemClickListener.onItemClick((RecyclerView) v.getParent(), v, position, noteList.get(position));
+            onItemClickListener.onItemClick((RecyclerView) v.getParent(), v, position, noteList.get(position).getId());
         }
     }
 }

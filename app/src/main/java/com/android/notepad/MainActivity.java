@@ -73,11 +73,10 @@ public class MainActivity extends AppCompatActivity {
          */
         noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(RecyclerView parent, View view, int position, Note note) {
-                Log.d("MainActivity", "onItemClick, " + position + ", " + note.getContent());
+            public void onItemClick(RecyclerView parent, View view, int position, int noteId) {
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 intent.putExtra("tag", "update");   // 表示这是个更新操作
-                intent.putExtra("note", note);
+                intent.putExtra("noteId", noteId);
                 startActivity(intent);
             }
         });
