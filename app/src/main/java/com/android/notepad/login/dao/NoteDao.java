@@ -16,7 +16,6 @@ public class NoteDao {
     private static NoteDao noteDao;
     NoteDatabaseHelper noteDatabaseHelper;
     SQLiteDatabase db;
-//    List<Note> noteList = new ArrayList<>();
     public static NoteDao getInstance() {
         if (noteDao == null) {
             noteDao = new NoteDao();
@@ -29,7 +28,7 @@ public class NoteDao {
      * @param context
      */
     public void createNoteDatabase(Context context) {
-        noteDatabaseHelper = new NoteDatabaseHelper(context, "note_store.db", null, 3);
+        noteDatabaseHelper = new NoteDatabaseHelper(context, "note_store.db", null, 1);
         db = noteDatabaseHelper.getWritableDatabase();
     }
 
@@ -80,7 +79,7 @@ public class NoteDao {
                 String content = cursor.getString(cursor.getColumnIndex("content"));
                 String time = cursor.getString(cursor.getColumnIndex("time"));
                 long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
-                byte[] image = cursor.getBlob(cursor.getColumnIndex("image"));
+                String image = cursor.getString(cursor.getColumnIndex("image"));
                 Note note = new Note(id, content, time, timestamp, image);
                 noteList.add(note);
             } while (cursor.moveToPrevious());
@@ -96,7 +95,6 @@ public class NoteDao {
      */
     public Note queryNoteById(int id) {
         Note note = new Note();
-//        System.out.println("id = " + id);
         Cursor cursor = db.query("Note", null, "id=?",
                 new String[] { String.valueOf(id) }, null, null, null);
         if (cursor.moveToFirst()) {
@@ -104,7 +102,7 @@ public class NoteDao {
             note.setContent(cursor.getString(cursor.getColumnIndex("content")));
             note.setTime(cursor.getString(cursor.getColumnIndex("time")));
             note.setTimestamp(cursor.getLong(cursor.getColumnIndex("timestamp")));
-            note.setImage(cursor.getBlob(cursor.getColumnIndex("image")));
+            note.setImage(cursor.getString(cursor.getColumnIndex("image")));
         }
         cursor.close();
         return note;

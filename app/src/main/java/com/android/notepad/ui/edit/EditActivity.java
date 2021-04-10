@@ -34,7 +34,9 @@ import com.android.notepad.login.model.Note;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -84,9 +86,16 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             edit.setText(note.getContent());
             // 若有存储图片则设置imageView
             if (note.getImage() != null) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(note.getImage(), 0, note.getImage().length);
-                imageView.setImageBitmap(bitmap);
-                adjustImageView(this, imageView, bitmap);
+                try {
+                    // 通过note.getImage()获取文件名，打开文件输入流
+                    FileInputStream inputImage = openFileInput(note.getImage());
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
+                    imageView.setImageBitmap(bitmap);
+                    adjustImageView(this, imageView, bitmap);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+//                Bitmap bitmap = BitmapFactory.decodeByteArray(note.getImage(), 0, note.getImage().length);
             }
 
             timeAlterText.setText("修改时间：" + note.getTime());
@@ -105,7 +114,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             try {
                 saveNote();
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             finish();
@@ -126,7 +135,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("EditActivity", "home click");
                 try {
                     saveNote();
-                } catch (FileNotFoundException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 finish();
@@ -217,7 +226,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 保存笔记
      */
-    private void saveNote() throws FileNotFoundException {
+    private void saveNote() throws IOException {
         // 获取时间
         Date date = new Date();
         @SuppressLint("SimpleDateFormat")
@@ -225,13 +234,25 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         long timestamp = System.currentTimeMillis();
 
         // 将图片转化成字节流
-        byte[] imageByteArray = null;
+//        byte[] imageByteArray = null;
+//        if (imageUri != null) {
+//            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
+//            final ByteArrayOutputStream os = new ByteArrayOutputStream();
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
+//            imageByteArray = os.toByteArray();
+//        }
+
+        // 文件存储图片
+        String imageFileName = null;
         if (imageUri != null) {
+            imageFileName = String.valueOf(timestamp);
             Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
-            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
-            imageByteArray = os.toByteArray();
+            FileOutputStream outputImage = openFileOutput(imageFileName, Context.MODE_PRIVATE);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputImage);
+            outputImage.flush();
+            outputImage.close();
         }
+
 
         // 判断是插入还是更新
         if ("insert".equals(tag)) {
@@ -240,8 +261,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 note.setContent(edit.getText().toString());
                 note.setTime(ft.format(date));
                 note.setTimestamp(timestamp);
-                if (imageByteArray != null) {
-                    note.setImage(imageByteArray);
+                if (imageFileName != null) {
+                    note.setImage(imageFileName);
                 }
 
                 Repository.getInstance().insertNote(note);
@@ -256,8 +277,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 note.setContent(edit.getText().toString());
                 note.setTime(ft.format(date));
                 note.setTimestamp(timestamp);
-                if (imageByteArray != null) {
-                    note.setImage(imageByteArray);
+                if (imageFileName != null) {
+                    note.setImage(imageFileName);
                 }
                 Repository.getInstance().updateNote(note);
 //                    Log.d("EditActivity", "update");

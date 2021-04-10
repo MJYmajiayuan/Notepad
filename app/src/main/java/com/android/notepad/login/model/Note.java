@@ -8,19 +8,19 @@ public class Note implements Serializable {
     private String content;
     private String time;
     private long timestamp;
-    private byte[] image;
+    private String image;
 
     public Note() {
     }
 
-    public Note (String content, String time, long timestamp, byte[] image) {
+    public Note (String content, String time, long timestamp, String image) {
         this.content = content;
         this.time = time;
         this.timestamp = timestamp;
         this.image = image;
     }
 
-    public Note(int id, String content, String time, long timestamp, byte[] image) {
+    public Note(int id, String content, String time, long timestamp, String image) {
         this.id = id;
         this.content = content;
         this.time = time;
@@ -60,11 +60,11 @@ public class Note implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public byte[] getImage() {
+    public String getImage() {
         return image;
     }
 
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
         this.image = image;
     }
 }

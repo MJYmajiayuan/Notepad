@@ -13,7 +13,7 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
             "content text," +
             "time text," +
             "timestamp bigint," +
-            "image blob)";
+            "image text)";
 
     public NoteDatabaseHelper(@Nullable Context context, @Nullable String name,
                               @Nullable SQLiteDatabase.CursorFactory factory, int version) {
@@ -27,11 +27,14 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion <= 1) {
-            db.execSQL("alter table Note add column timestamp bigint");
-        }
-        if (oldVersion <= 2) {
-            db.execSQL("alter table Note add column image blob");
-        }
+//        if (oldVersion <= 1) {
+//            db.execSQL("alter table Note add column timestamp bigint");
+//        }
+//        if (oldVersion <= 2) {
+//            db.execSQL("alter table Note add column image blob");
+//        }
+//        if (oldVersion <= 3) {
+//            db.execSQL("alter table Note drop column image");
+//        }
     }
 }
