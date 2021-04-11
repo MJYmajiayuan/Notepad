@@ -1,9 +1,13 @@
 package com.android.notepad.ui.home;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -11,18 +15,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.notepad.R;
 import com.android.notepad.login.model.Note;
+import com.android.notepad.ui.UiUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> implements View.OnClickListener {
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
+        ImageView imageItem;
         TextView contentText;
         TextView timeText;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            imageItem = itemView.findViewById(R.id.image_item);
             contentText = itemView.findViewById(R.id.content_text);
             timeText = itemView.findViewById(R.id.time_text);
         }
@@ -37,11 +49,14 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> im
 
     private OnItemClickListener onItemClickListener;
     private List<Note> noteList;
+    private Map<Integer, Bitmap> noteBitmapMap;
     private Context context;
 
-    public NoteAdapter(Context context, List<Note> noteList) {
+    public NoteAdapter(Context context, List<Note> noteList, Map<Integer, Bitmap> noteBitmapMap) {
         this.noteList = noteList;
         this.context = context;
+        this.noteBitmapMap = noteBitmapMap;
+
     }
 
     @NonNull
@@ -56,6 +71,12 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> im
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Note note = noteList.get(position);
+
+        // 从noteBitmapMap中获取Bitmap，若map里没有对应id的bitmap则返回空
+        Bitmap bitmap = noteBitmapMap.get(note.getId());
+        holder.imageItem.setImageBitmap(bitmap);
+        UiUtil.adjustImageView(context, holder.imageItem, bitmap);
+
         holder.contentText.setText(note.getContent());
         holder.timeText.setText(note.getTime());
         // 保存position

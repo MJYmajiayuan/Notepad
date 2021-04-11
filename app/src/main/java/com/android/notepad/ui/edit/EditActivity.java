@@ -22,6 +22,7 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 import com.android.notepad.R;
 import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
+import com.android.notepad.ui.UiUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -91,11 +93,11 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     FileInputStream inputImage = openFileInput(note.getImage());
                     Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
                     imageView.setImageBitmap(bitmap);
-                    adjustImageView(this, imageView, bitmap);
+//                    Log.d("EditActivity", "imageView.width = " + imageView.getWidth());
+                    UiUtil.adjustImageView(this, imageView, bitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-//                Bitmap bitmap = BitmapFactory.decodeByteArray(note.getImage(), 0, note.getImage().length);
             }
 
             timeAlterText.setText("修改时间：" + note.getTime());
@@ -197,8 +199,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 try {
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
                     imageView.setImageBitmap(bitmap);
-                    adjustImageView(this, imageView, bitmap);
-
+                    UiUtil.adjustImageView(this, imageView, bitmap);    // 调整图片的大小
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -210,9 +211,9 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     imageUri = data.getData();
                     if (imageUri != null) {
                         try {
-                            Bitmap bitmap = getBitmapFromUri(imageUri);
+                            Bitmap bitmap = UiUtil.getBitmapFromUri(this, imageUri);
                             imageView.setImageBitmap(bitmap);
-                            adjustImageView(this, imageView, bitmap);
+                            UiUtil.adjustImageView(this, imageView, bitmap);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -232,15 +233,6 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         @SuppressLint("SimpleDateFormat")
         SimpleDateFormat ft = new SimpleDateFormat("yyyy年MM月dd日");
         long timestamp = System.currentTimeMillis();
-
-        // 将图片转化成字节流
-//        byte[] imageByteArray = null;
-//        if (imageUri != null) {
-//            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
-//            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
-//            imageByteArray = os.toByteArray();
-//        }
 
         // 文件存储图片
         String imageFileName = null;
@@ -286,71 +278,5 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    /**
-     * 获取bitmap
-     * @param uri
-     * @return
-     * @throws FileNotFoundException
-     */
-    private Bitmap getBitmapFromUri(Uri uri) throws FileNotFoundException {
-        Bitmap bitmap = null;
-        if (getContentResolver().openFileDescriptor(uri, "r") != null) {
-            bitmap = BitmapFactory.decodeFileDescriptor(
-                    getContentResolver().openFileDescriptor(uri, "r").getFileDescriptor());
-        }
-        return bitmap;
-    }
 
-    /**
-     * 获取屏幕宽度
-     * @param context
-     * @return
-     */
-    private int getScreenWidth(Context context) {
-        WindowManager windowManager = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.widthPixels;
-    }
-
-    /**
-     * 获取屏幕高度
-     * @param context
-     * @return
-     */
-    private int getScreenHeight(Context context) {
-        WindowManager windowManager = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.heightPixels;
-    }
-
-    /**
-     * 根据手机的分辨率从px转成为dp
-     * @param context
-     * @param pxValue
-     * @return
-     */
-    private int px2dip(Context context, float pxValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (pxValue / scale + 0.5f);
-    }
-
-    /**
-     * 调整ImageView的大小，使之根据图片的大小调整
-     * @param context
-     * @param imageView
-     * @param bitmap
-     */
-    private void adjustImageView(Context context, ImageView imageView, Bitmap bitmap) {
-        if (bitmap.getWidth() > getScreenWidth(this)) {
-            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        } else {
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        }
-        ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
-        float newHeight = (float) getScreenWidth(context) / (float) bitmap.getWidth() * bitmap.getHeight();
-        layoutParams.height = (int) newHeight;
-        imageView.setLayoutParams(layoutParams);
-    }
 }

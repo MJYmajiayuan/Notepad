@@ -1,6 +1,8 @@
 package com.android.notepad;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -8,12 +10,19 @@ import androidx.lifecycle.ViewModel;
 import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainViewModel extends ViewModel {
     MutableLiveData<List<Note>> noteLiveData = new MutableLiveData<>();
+    MutableLiveData<Map<Integer, Bitmap>> noteBitmapMapLiveData = new MutableLiveData<>();
     List<Note> noteList = new ArrayList<>();
+    Map<Integer, Bitmap> noteBitmapMap = new HashMap<>();
 
     public void createNoteDatabase(Context context) {
         Repository.getInstance().createNoteDatabase(context);
@@ -27,9 +36,30 @@ public class MainViewModel extends ViewModel {
         return Repository.getInstance().queryNote();
     }
 
-    public void refreshNoteList() {
+    public void refreshNoteList(Context context) {
         noteList.clear();
         noteList.addAll(queryNote());
         noteLiveData.setValue(noteList);
+
+        noteBitmapMap.clear();
+        for (Note note : noteList) {
+            if (note.getImage() != null) {
+                FileInputStream inputImage = null;
+                try {
+                    inputImage = context.openFileInput(note.getImage());
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
+                    noteBitmapMap.put(note.getId(), bitmap);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        inputImage.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        noteBitmapMapLiveData.setValue(noteBitmapMap);
     }
 }

@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,8 +20,13 @@ import com.android.notepad.ui.edit.EditActivity;
 import com.android.notepad.ui.home.NoteAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,11 +48,33 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(myToolbar);     // 设置自定义标题栏
         mainViewModel.createNoteDatabase(this);  // 创建数据库
 
-        initNotes();        // 从SQLite获取数据
+        mainViewModel.refreshNoteList(this);
+//        initNotes(mainViewModel.noteList);        // 从SQLite获取数据
+//
+//        Map<Integer, Bitmap> noteBitmap = new HashMap<>();
+//        for (Note note : mainViewModel.noteList) {
+//            if (note.getImage() != null) {
+//                FileInputStream inputImage = null;
+//                try {
+//                    inputImage = openFileInput(note.getImage());
+//                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
+//                    noteBitmap.put(note.getId(), bitmap);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    try {
+//                        inputImage.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//            }
+//        }
         RecyclerView.LayoutManager layoutManager= new StaggeredGridLayoutManager(2,
                 StaggeredGridLayoutManager.VERTICAL);   // 瀑布流布局
         noteRecycler.setLayoutManager(layoutManager);
-        NoteAdapter noteAdapter = new NoteAdapter(this, mainViewModel.noteList);
+        NoteAdapter noteAdapter = new NoteAdapter(this, mainViewModel.noteList, mainViewModel.noteBitmapMap);
         noteRecycler.setAdapter(noteAdapter);
 
         /**
@@ -86,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d("MainActivity", "onResume refresh");
-        mainViewModel.refreshNoteList();
+        mainViewModel.refreshNoteList(this);
     }
 
     @Override
@@ -106,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 初始化数据
      */
-    private void initNotes() {
-        mainViewModel.noteList.addAll(mainViewModel.queryNote());
+    private void initNotes(List<Note> noteList) {
+        noteList.addAll(mainViewModel.queryNote());
     }
 }
