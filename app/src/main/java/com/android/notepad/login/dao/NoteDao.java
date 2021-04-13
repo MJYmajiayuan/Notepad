@@ -60,10 +60,11 @@ public class NoteDao {
 
     /**
      * 删除数据
-     * @param note
+     * @param noteId
      */
-    public void deleteNote(Note note) {
-        db.delete("Note", "id = ?", new String[] { String.valueOf(note.getId()) });
+    public void deleteNote(int noteId) {
+        // 这里需要添加删除图片文件的功能
+        db.delete("Note", "id = ?", new String[] { String.valueOf(noteId) });
     }
 
     /**
@@ -107,4 +108,5 @@ public class NoteDao {
         cursor.close();
         return note;
     }
+
 }

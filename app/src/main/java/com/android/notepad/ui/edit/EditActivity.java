@@ -12,18 +12,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -47,10 +52,12 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     private final int TAKE_PHOTO = 1;
     private final int FROM_ALBUM = 2;
+    private final int RECORD = 3;
 
     private Toolbar editToolbar;
     private ImageView imageView;
     private EditText edit;
+    private Button playSoundBtn;
     private TextView timeAlterText;
     private ImageButton insertPhotoBtn;
     private ImageButton insertImageBtn;
@@ -58,6 +65,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private ImageButton insertDrawBtn;
     private String tag;
     private Uri imageUri;
+    private MediaPlayer mediaPlayer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +75,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         editToolbar = (Toolbar) findViewById(R.id.edit_toolbar);
         imageView = (ImageView) findViewById(R.id.image_view);
         edit = (EditText) findViewById(R.id.edit);
+        playSoundBtn = (Button) findViewById(R.id.play_sound_btn);
         timeAlterText = (TextView) findViewById(R.id.time_alter_text);
         insertPhotoBtn = (ImageButton) findViewById(R.id.insert_photo_btn);
         insertImageBtn = (ImageButton) findViewById(R.id.insert_image_btn);
@@ -80,6 +89,11 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
+
+        // 设置播放录音样式
+        Drawable soundDrawable = getResources().getDrawable(R.drawable.icon_sound);
+        soundDrawable.setBounds(0, 0, 60, 60);
+        playSoundBtn.setCompoundDrawables(soundDrawable, null, null, null);
 
         // 若是个更新操作，将intent中的对象取出
         if ("update".equals(tag)) {
@@ -108,9 +122,15 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         insertImageBtn.setOnClickListener(this);
         insertVoiceBtn.setOnClickListener(this);
         insertDrawBtn.setOnClickListener(this);
-
+        playSoundBtn.setOnClickListener(this);
     }
 
+    /**
+     * 按下返回键的保存记事
+     * @param keyCode
+     * @param event
+     * @return
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -122,6 +142,17 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             finish();
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * 加载edit_toolbar.xml布局
+     * @param menu
+     * @return
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.edit_toolbar, menu);
+        return true;
     }
 
     /**
@@ -142,6 +173,14 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 finish();
                 return true;
+            case R.id.delete_note:      // 点击删除键事件
+                int noteId = getIntent().getIntExtra("noteId", 0);
+                if (noteId != 0) {
+                    Repository.getInstance().deleteNote(noteId);
+                }
+                finish();
+                return true;
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -151,10 +190,6 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.insert_photo_btn:
-                // 以当前的年月日时分秒作为文件名
-//                Date date = new Date();
-//                @SuppressLint("SimpleDateFormat")
-//                SimpleDateFormat ft = new SimpleDateFormat("IMG_yyyy-MM-dd-HH-mm-ss");
                 File cameraImage = new File(getExternalCacheDir(), "output_image.jpg");
                 try {
                     if (cameraImage.exists()) {
@@ -184,8 +219,15 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(docIntent, FROM_ALBUM);
                 break;
             case R.id.insert_voice_btn:
+                Intent recordIntent = new Intent(EditActivity.this, RecordActivity.class);
+                startActivityForResult(recordIntent, RECORD);
                 break;
             case R.id.insert_draw_btn:
+                break;
+            case R.id.play_sound_btn:
+                if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
+                    mediaPlayer.start();
+                }
                 break;
         }
     }
@@ -221,6 +263,18 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             }
+            case RECORD: {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    playSoundBtn.setVisibility(View.VISIBLE);
+                    String soundFilePath = data.getStringExtra("soundFilePath");
+                    try {
+                        initMediaPlayer(soundFilePath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            break;
         }
     }
 
@@ -248,7 +302,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
         // 判断是插入还是更新
         if ("insert".equals(tag)) {
-            if (edit.getText() != null && !"".equals(edit.getText().toString())) {
+            if (TextUtils.isEmpty(edit.getText())
+                    || imageUri != null) {
                 Note note = new Note();
                 note.setContent(edit.getText().toString());
                 note.setTime(ft.format(date));
@@ -261,9 +316,10 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 //                    Log.d("EditActivity", "insert");
             }
         } else if ("update".equals(tag)) {
-            Note note = Repository.getInstance().queryNoteById(getIntent().getIntExtra("noteId", 1));
-            if (edit.getText() == null || "".equals(edit.getText().toString())) {
-                Repository.getInstance().deleteNote(note);
+            Note note = Repository.getInstance().queryNoteById(getIntent().getIntExtra("noteId", 0));
+            if (TextUtils.isEmpty(edit.getText())
+                    && note.getImage() == null) {
+                Repository.getInstance().deleteNote(note.getId());
 //                    Log.d("EditActivity", "delete");
             } else {
                 note.setContent(edit.getText().toString());
@@ -278,5 +334,10 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void initMediaPlayer(String soundFilePath) throws IOException {
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setDataSource(soundFilePath);
+        mediaPlayer.prepare();
+    }
 
 }

@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar myToolbar;
     private FloatingActionButton editBtn;
     private RecyclerView noteRecycler;
-//    private List<Note> noteList;
     private MainViewModel mainViewModel;
 
     @Override
@@ -49,28 +48,7 @@ public class MainActivity extends AppCompatActivity {
         mainViewModel.createNoteDatabase(this);  // 创建数据库
 
         mainViewModel.refreshNoteList(this);
-//        initNotes(mainViewModel.noteList);        // 从SQLite获取数据
-//
-//        Map<Integer, Bitmap> noteBitmap = new HashMap<>();
-//        for (Note note : mainViewModel.noteList) {
-//            if (note.getImage() != null) {
-//                FileInputStream inputImage = null;
-//                try {
-//                    inputImage = openFileInput(note.getImage());
-//                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
-//                    noteBitmap.put(note.getId(), bitmap);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    try {
-//                        inputImage.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//            }
-//        }
+
         RecyclerView.LayoutManager layoutManager= new StaggeredGridLayoutManager(2,
                 StaggeredGridLayoutManager.VERTICAL);   // 瀑布流布局
         noteRecycler.setLayoutManager(layoutManager);
@@ -78,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         noteRecycler.setAdapter(noteAdapter);
 
         /**
+         * 通过点击悬浮按钮进入编辑界面
          * 悬浮按钮点击事件，点击后进入编辑界面
          */
         editBtn.setOnClickListener(new View.OnClickListener() {
@@ -98,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         /**
+         * 通过点击item进入编辑界面
          * 设置item的点击事件
          */
         noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {

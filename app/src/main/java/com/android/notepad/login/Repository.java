@@ -28,8 +28,8 @@ public class Repository {
         NoteDao.getInstance().updateNote(note);
     }
 
-    public void deleteNote(Note note) {
-        NoteDao.getInstance().deleteNote(note);
+    public void deleteNote(int noteId) {
+        NoteDao.getInstance().deleteNote(noteId);
     }
 
     public List<Note> queryNote() {
