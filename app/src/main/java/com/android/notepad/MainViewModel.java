@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel;
 import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,7 +37,12 @@ public class MainViewModel extends ViewModel {
         return Repository.getInstance().queryNote();
     }
 
-    public void refreshNoteList(Context context) {
+    public Note queryNoteById(int noteId) {
+        return Repository.getInstance().queryNoteById(noteId);
+    }
+
+    public void refreshNoteList(Context context, int noteId) {
+
         noteList.clear();
         noteList.addAll(queryNote());
         noteLiveData.setValue(noteList);
@@ -44,20 +50,22 @@ public class MainViewModel extends ViewModel {
         noteBitmapMap.clear();
         for (Note note : noteList) {
             if (note.getImage() != null) {
-                FileInputStream inputImage = null;
-                try {
-                    inputImage = context.openFileInput(note.getImage());
-                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
-                    noteBitmapMap.put(note.getId(), bitmap);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        inputImage.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+//                FileInputStream inputImage = null;
+                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+                noteBitmapMap.put(note.getId(), bitmap);
+//                try {
+//                    inputImage = context.openFileInput(note.getImage());
+//                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
+//                    noteBitmapMap.put(note.getId(), bitmap);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    try {
+//                        inputImage.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
             }
         }
         noteBitmapMapLiveData.setValue(noteBitmapMap);

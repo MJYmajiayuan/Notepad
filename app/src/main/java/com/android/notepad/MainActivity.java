@@ -30,10 +30,14 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final int FROM_BUTTON = 1;
+    private final int FROM_ITEM = 2;
+
     private Toolbar myToolbar;
     private FloatingActionButton editBtn;
     private RecyclerView noteRecycler;
     private MainViewModel mainViewModel;
+    private int clickId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(myToolbar);     // 设置自定义标题栏
         mainViewModel.createNoteDatabase(this);  // 创建数据库
 
-        mainViewModel.refreshNoteList(this);
+        mainViewModel.refreshNoteList(this, clickId);
 
         RecyclerView.LayoutManager layoutManager= new StaggeredGridLayoutManager(2,
                 StaggeredGridLayoutManager.VERTICAL);   // 瀑布流布局
@@ -64,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 intent.putExtra("tag", "insert");   // 表示这是个插入操作
-                startActivity(intent);
+                startActivityForResult(intent, FROM_BUTTON);
             }
         });
 
@@ -86,7 +90,8 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 intent.putExtra("tag", "update");   // 表示这是个更新操作
                 intent.putExtra("noteId", noteId);
-                startActivity(intent);
+                clickId = noteId;
+                startActivityForResult(intent, FROM_ITEM);
             }
         });
     }
@@ -95,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d("MainActivity", "onResume refresh");
-        mainViewModel.refreshNoteList(this);
+        mainViewModel.refreshNoteList(this, clickId);
     }
 
     @Override

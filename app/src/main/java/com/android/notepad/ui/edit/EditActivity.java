@@ -70,6 +70,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private Uri imageUri;
     private MediaPlayer mediaPlayer = null;
     private String soundFilePath = null;
+    private String picFilePath = null;  // 图片文件名，包括照片和手绘
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,16 +107,13 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             edit.setText(note.getContent());
             // 若有存储图片则设置imageView
             if (note.getImage() != null) {
-                try {
-                    // 通过note.getImage()获取文件名，打开文件输入流
-                    FileInputStream inputImage = openFileInput(note.getImage());
-                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
-                    imageView.setImageBitmap(bitmap);
-//                    Log.d("EditActivity", "imageView.width = " + imageView.getWidth());
-                    UiUtil.adjustImageView(this, imageView, bitmap);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+                // 通过note.getImage()获取文件名，打开文件输入流
+//                FileInputStream inputImage = openFileInput(note.getImage());
+//                Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
+                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+                imageView.setImageBitmap(bitmap);
+//                Log.d("EditActivity", "imageView.width = " + imageView.getWidth());
+                UiUtil.adjustImageView(this, imageView, bitmap);
             }
             // 若有录音则显示出来
             if (note.getSound() != null) {
@@ -153,6 +151,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             finish();
         }
         return super.onKeyDown(keyCode, event);
@@ -258,9 +257,13 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
                     imageView.setImageBitmap(bitmap);
                     UiUtil.adjustImageView(this, imageView, bitmap);    // 调整图片的大小
+                    saveImgFile(bitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
                 break;
             }
             // 从相册获取
@@ -272,7 +275,10 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                             Bitmap bitmap = UiUtil.getBitmapFromUri(this, imageUri);
                             imageView.setImageBitmap(bitmap);
                             UiUtil.adjustImageView(this, imageView, bitmap);
+                            saveImgFile(bitmap);
                         } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
@@ -296,10 +302,21 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
             break;
+            // 画图
             case PAINT: {
+                Log.d("EditActivity", "Paint");
                 if (resultCode == Activity.RESULT_OK && data != null) {
-
+                    picFilePath = data.getStringExtra("paintFilePath");
+                    Log.d("EditActivity", "paintFilePath: " + picFilePath);
+                    // 从文件名获取Bitmap对象
+                    Bitmap bitmap = BitmapFactory.decodeFile(picFilePath);
+                    if (bitmap == null) {
+                        Log.d("EditActivity", "Bitmap is null.");
+                    }
+                    imageView.setImageBitmap(bitmap);
+                    UiUtil.adjustImageView(this, imageView, bitmap);
                 }
+                break;
             }
         }
     }
@@ -314,29 +331,17 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         SimpleDateFormat ft = new SimpleDateFormat("yyyy年MM月dd日");
         long timestamp = System.currentTimeMillis();
 
-        // 文件存储图片
-        String imageFileName = null;
-        if (imageUri != null) {
-            imageFileName = String.valueOf(timestamp);
-            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
-            FileOutputStream outputImage = openFileOutput(imageFileName, Context.MODE_PRIVATE);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputImage);
-            outputImage.flush();
-            outputImage.close();
-        }
-
-
         // 判断是插入还是更新
         if ("insert".equals(tag)) {
             if (!TextUtils.isEmpty(edit.getText())
-                    || !TextUtils.isEmpty(imageFileName)
+                    || !TextUtils.isEmpty(picFilePath)
                     || !TextUtils.isEmpty(soundFilePath)) {
                 Note note = new Note();
                 note.setContent(edit.getText().toString());
                 note.setTime(ft.format(date));
                 note.setTimestamp(timestamp);
-                if (imageFileName != null) {
-                    note.setImage(imageFileName);
+                if (picFilePath != null) {
+                    note.setImage(picFilePath);
                 }
                 if (soundFilePath != null) {
                     note.setSound(soundFilePath);
@@ -348,7 +353,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         } else if ("update".equals(tag)) {
             Note note = Repository.getInstance().queryNoteById(getIntent().getIntExtra("noteId", 0));
             if (TextUtils.isEmpty(edit.getText())
-                    && TextUtils.isEmpty(imageFileName)
+                    && TextUtils.isEmpty(note.getImage())
                     && TextUtils.isEmpty(note.getSound())) {
                 Repository.getInstance().deleteNote(note.getId());
 //                    Log.d("EditActivity", "delete");
@@ -356,8 +361,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 note.setContent(edit.getText().toString());
                 note.setTime(ft.format(date));
                 note.setTimestamp(timestamp);
-                if (imageFileName != null) {
-                    note.setImage(imageFileName);
+                if (picFilePath != null) {
+                    note.setImage(picFilePath);
                 }
                 if (soundFilePath != null) {
                     note.setSound(soundFilePath);
@@ -365,6 +370,36 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 Repository.getInstance().updateNote(note);
 //                    Log.d("EditActivity", "update");
             }
+        }
+        Log.d("EditActivity", "完成数据库存储，耗时：" + (System.currentTimeMillis() - timestamp));
+    }
+
+    /**
+     * 保存通过相机或者图库选择的图片
+     * @param bitmap
+     * @throws IOException
+     */
+    private void saveImgFile(Bitmap bitmap) throws IOException {
+        long timestamp = System.currentTimeMillis();
+        // 文件存储图片
+        File imageFileDir = new File(getExternalFilesDir(null), "images");
+        if (!imageFileDir.exists()) {
+            imageFileDir.mkdir();
+        }
+        String imageFileName = null;
+        String imageFilePath = null;
+        if (bitmap != null) {
+            // 命名图片文件名
+            imageFileName = timestamp + ".jpg";
+            picFilePath = imageFileDir + "/" + imageFileName;
+
+            // 将图片压缩后放入文件输出流
+            File imageFile = new File(imageFileDir, imageFileName);
+            FileOutputStream imageOutputStream = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, imageOutputStream);
+
+            imageOutputStream.flush();
+            imageOutputStream.close();
         }
     }
 

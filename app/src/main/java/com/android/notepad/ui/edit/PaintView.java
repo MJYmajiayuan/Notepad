@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -32,21 +33,29 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
     private Path mPath = new Path();
     // Paint实例
     private Paint mPaint = new Paint();
-
+    // 用于保存的Canvas对象
     private Canvas svCanvas;
-
+    // 用于保存的Bitmap对象
     private Bitmap mBitmap = null;
+    // 标记是否绘画过
+    private boolean beDraw = false;
+    // 设置保存的图片文件
+    private File paintFile;
+    // 画图线程
+    private Thread drawThread;
 
     public PaintView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initView();
+        initFile();
     }
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         // startDraw置为true，线程运行
         startDraw = true;
-        new Thread(this).start();
+        drawThread = new Thread(this);
+        drawThread.start();
     }
 
     @Override
@@ -65,6 +74,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
         int y = (int) event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                beDraw = true;  // 表示画布被修改过
                 mPath.moveTo(x, y);
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -83,7 +93,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
             // 绘制
             draw();
         }
-        saveBitmap();
     }
 
 
@@ -103,19 +112,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
     }
 
     /**
-     * 初始化用于保存的画布
+     * 初始化目录文件和图片文件
      */
-    private void initSvCanvas() {
-        mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        svCanvas = new Canvas(mBitmap);
-        // 先把画布置为白色
-        svCanvas.drawColor(Color.WHITE);
-    }
-
-    /**
-     * 将通过svCanvas绘制的bitmap保存为图片
-     */
-    private void saveBitmap() {
+    private void initFile() {
         // 设置图片存储目录
         File paintDir = new File(getContext().getExternalFilesDir(null), "paint");
         if (!paintDir.exists()) {
@@ -123,21 +122,22 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
         }
         // 创建图片文件
         String paintFileName = System.currentTimeMillis() + ".jpg";
-        File paintFile = new File(paintDir, paintFileName);
-        FileOutputStream out = null;
+        paintFile  = new File(paintDir, paintFileName);
         try {
-            out = new FileOutputStream(paintFile);
-            mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-        } catch (FileNotFoundException e) {
+            paintFile.createNewFile();
+        } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                out.flush();
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
+    }
+
+    /**
+     * 初始化用于保存的画布
+     */
+    private void initSvCanvas() {
+        mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        svCanvas = new Canvas(mBitmap);
+        // 先把画布置为白色
+        svCanvas.drawColor(Color.WHITE);
     }
 
     /**
@@ -164,9 +164,62 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
     }
 
     /**
+     * 将通过svCanvas绘制的bitmap保存为图片
+     */
+    private void saveBitmap() {
+        if (!beDraw) {
+            Log.d("PaintView", "paintFile delete");
+            paintFile.delete();
+        } else {
+            Log.d("PaintView", "paintFile save");
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(paintFile);
+                mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    out.flush();
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 保存绘图
+     */
+    public void savePaintFile() {
+        startDraw = false;
+        try {
+            drawThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        saveBitmap();
+    }
+
+    /**
+     * 舍弃绘图
+     */
+    public void dropPaintFile() {
+        startDraw = false;
+        paintFile.delete();
+    }
+
+    /**
      * 重置画布
      */
     public void reset() {
         mPath.reset();
     }
+
+    public String getPaintFilePath() {
+        return paintFile.getAbsolutePath();
+    }
+
+
 }
