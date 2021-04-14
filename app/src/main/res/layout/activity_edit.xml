@@ -41,16 +41,48 @@
                 android:paddingEnd="20dp"
                 android:background="#00000000" />
 
+<!--            <LinearLayout-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical">-->
+
+<!--                <ImageView-->
+<!--                    android:layout_width="15dp"-->
+<!--                    android:layout_height="15dp"-->
+<!--                    android:layout_gravity="right"-->
+<!--                    android:src="@drawable/icon_delete_sound"-->
+<!--                    android:layout_margin="5dp"/>-->
+
+<!--                <ImageView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="10dp"-->
+<!--                    android:src="@drawable/icon_play_sound" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="3''"-->
+<!--                    android:textSize="18sp"-->
+<!--                    android:textColor="@color/black"-->
+<!--                    android:layout_gravity="center" />-->
+
+<!--            </LinearLayout>-->
+
             <Button
                 android:id="@+id/play_sound_btn"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="20dp"
-                android:drawableLeft="@drawable/icon_sound"
-                android:text="3秒"
+                android:paddingTop="10dp"
+                android:drawableTop="@drawable/icon_sound"
+                android:text="3''"
                 android:textSize="18sp"
-                android:gravity="left|center_vertical"
-                android:visibility="gone"/>
+                android:gravity="center_horizontal"
+                android:background="@color/white"
+                android:visibility="gone"
+                android:elevation="8dp">
+
+            </Button>
 
         </LinearLayout>
 

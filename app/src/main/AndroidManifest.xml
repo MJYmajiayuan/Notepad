@@ -12,6 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents.Light.NoActionBar.Bridge">
+        <activity android:name=".ui.edit.PaintActivity"></activity>
         <activity
             android:name=".ui.edit.RecordActivity"
             android:theme="@style/RecordTheme" />

@@ -39,6 +39,8 @@ import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
 import com.android.notepad.ui.UiUtil;
 
+import org.w3c.dom.Text;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,6 +55,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private final int TAKE_PHOTO = 1;
     private final int FROM_ALBUM = 2;
     private final int RECORD = 3;
+    private final int PAINT = 4;
 
     private Toolbar editToolbar;
     private ImageView imageView;
@@ -66,6 +69,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private String tag;
     private Uri imageUri;
     private MediaPlayer mediaPlayer = null;
+    private String soundFilePath = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +97,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         // 设置播放录音样式
         Drawable soundDrawable = getResources().getDrawable(R.drawable.icon_sound);
         soundDrawable.setBounds(0, 0, 60, 60);
-        playSoundBtn.setCompoundDrawables(soundDrawable, null, null, null);
+        playSoundBtn.setCompoundDrawables(null, soundDrawable, null, null);
 
         // 若是个更新操作，将intent中的对象取出
         if ("update".equals(tag)) {
@@ -113,7 +117,17 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                 }
             }
-
+            // 若有录音则显示出来
+            if (note.getSound() != null) {
+                try {
+                    initMediaPlayer(note.getSound());
+                    playSoundBtn.setVisibility(View.VISIBLE);
+                    int duration = mediaPlayer.getDuration();
+                    playSoundBtn.setText(duration / 1000 + "''");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             timeAlterText.setText("修改时间：" + note.getTime());
         }
 
@@ -189,7 +203,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.insert_photo_btn:
+            case R.id.insert_photo_btn:     // 点击相机按钮
                 File cameraImage = new File(getExternalCacheDir(), "output_image.jpg");
                 try {
                     if (cameraImage.exists()) {
@@ -210,7 +224,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                 startActivityForResult(cameraIntent, TAKE_PHOTO);
                 break;
-            case R.id.insert_image_btn:
+            case R.id.insert_image_btn:     // 点击图片按钮
                 // 打开文件选择器
                 Intent docIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 docIntent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -218,13 +232,15 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 docIntent.setType("image/*");
                 startActivityForResult(docIntent, FROM_ALBUM);
                 break;
-            case R.id.insert_voice_btn:
+            case R.id.insert_voice_btn:     // 点击语音按钮
                 Intent recordIntent = new Intent(EditActivity.this, RecordActivity.class);
                 startActivityForResult(recordIntent, RECORD);
                 break;
-            case R.id.insert_draw_btn:
+            case R.id.insert_draw_btn:      // 点击画图按钮
+                Intent paintIntent = new Intent(EditActivity.this, PaintActivity.class);
+                startActivityForResult(paintIntent, PAINT);
                 break;
-            case R.id.play_sound_btn:
+            case R.id.play_sound_btn:       // 点击播放语音按钮
                 if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
                     mediaPlayer.start();
                 }
@@ -263,18 +279,28 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             }
+            // 录音
             case RECORD: {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    playSoundBtn.setVisibility(View.VISIBLE);
-                    String soundFilePath = data.getStringExtra("soundFilePath");
+                    soundFilePath = data.getStringExtra("soundFilePath");
                     try {
                         initMediaPlayer(soundFilePath);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    if (mediaPlayer != null) {
+                        playSoundBtn.setVisibility(View.VISIBLE);
+                        int duration = mediaPlayer.getDuration();
+                        playSoundBtn.setText(duration / 1000 + "''");
+                    }
                 }
             }
             break;
+            case PAINT: {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+
+                }
+            }
         }
     }
 
@@ -302,14 +328,18 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
         // 判断是插入还是更新
         if ("insert".equals(tag)) {
-            if (TextUtils.isEmpty(edit.getText())
-                    || imageUri != null) {
+            if (!TextUtils.isEmpty(edit.getText())
+                    || !TextUtils.isEmpty(imageFileName)
+                    || !TextUtils.isEmpty(soundFilePath)) {
                 Note note = new Note();
                 note.setContent(edit.getText().toString());
                 note.setTime(ft.format(date));
                 note.setTimestamp(timestamp);
                 if (imageFileName != null) {
                     note.setImage(imageFileName);
+                }
+                if (soundFilePath != null) {
+                    note.setSound(soundFilePath);
                 }
 
                 Repository.getInstance().insertNote(note);
@@ -318,7 +348,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         } else if ("update".equals(tag)) {
             Note note = Repository.getInstance().queryNoteById(getIntent().getIntExtra("noteId", 0));
             if (TextUtils.isEmpty(edit.getText())
-                    && note.getImage() == null) {
+                    && TextUtils.isEmpty(imageFileName)
+                    && TextUtils.isEmpty(note.getSound())) {
                 Repository.getInstance().deleteNote(note.getId());
 //                    Log.d("EditActivity", "delete");
             } else {
@@ -327,6 +358,9 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 note.setTimestamp(timestamp);
                 if (imageFileName != null) {
                     note.setImage(imageFileName);
+                }
+                if (soundFilePath != null) {
+                    note.setSound(soundFilePath);
                 }
                 Repository.getInstance().updateNote(note);
 //                    Log.d("EditActivity", "update");
@@ -339,5 +373,4 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         mediaPlayer.setDataSource(soundFilePath);
         mediaPlayer.prepare();
     }
-
 }

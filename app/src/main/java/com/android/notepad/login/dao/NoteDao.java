@@ -28,7 +28,7 @@ public class NoteDao {
      * @param context
      */
     public void createNoteDatabase(Context context) {
-        noteDatabaseHelper = new NoteDatabaseHelper(context, "note_store.db", null, 1);
+        noteDatabaseHelper = new NoteDatabaseHelper(context, "note_store.db", null, 2);
         db = noteDatabaseHelper.getWritableDatabase();
     }
 
@@ -42,6 +42,7 @@ public class NoteDao {
         values.put("time", note.getTime().toString());
         values.put("timestamp", note.getTimestamp());
         values.put("image", note.getImage());
+        values.put("sound", note.getSound());
         db.insert("Note", null, values);
     }
 
@@ -55,6 +56,7 @@ public class NoteDao {
         values.put("time", note.getTime().toString());
         values.put("timestamp", note.getTimestamp());
         values.put("image", note.getImage());
+        values.put("sound", note.getSound());
         db.update("Note", values, "id = ?", new String[] { String.valueOf(note.getId()) });
     }
 
@@ -81,7 +83,8 @@ public class NoteDao {
                 String time = cursor.getString(cursor.getColumnIndex("time"));
                 long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
                 String image = cursor.getString(cursor.getColumnIndex("image"));
-                Note note = new Note(id, content, time, timestamp, image);
+                String sound = cursor.getString(cursor.getColumnIndex("sound"));
+                Note note = new Note(id, content, time, timestamp, image, sound);
                 noteList.add(note);
             } while (cursor.moveToPrevious());
         }
@@ -104,6 +107,7 @@ public class NoteDao {
             note.setTime(cursor.getString(cursor.getColumnIndex("time")));
             note.setTimestamp(cursor.getLong(cursor.getColumnIndex("timestamp")));
             note.setImage(cursor.getString(cursor.getColumnIndex("image")));
+            note.setSound(cursor.getString(cursor.getColumnIndex("sound")));
         }
         cursor.close();
         return note;

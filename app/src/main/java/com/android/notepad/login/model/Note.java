@@ -9,23 +9,25 @@ public class Note implements Serializable {
     private String time;
     private long timestamp;
     private String image;
+    private String sound;
 
     public Note() {
     }
 
-    public Note (String content, String time, long timestamp, String image) {
+    public Note (String content, String time, long timestamp, String image, String sound) {
         this.content = content;
         this.time = time;
         this.timestamp = timestamp;
         this.image = image;
     }
 
-    public Note(int id, String content, String time, long timestamp, String image) {
+    public Note(int id, String content, String time, long timestamp, String image, String sound) {
         this.id = id;
         this.content = content;
         this.time = time;
         this.timestamp = timestamp;
         this.image = image;
+        this.sound = sound;
     }
 
     public int getId() {
@@ -66,5 +68,13 @@ public class Note implements Serializable {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getSound() {
+        return sound;
+    }
+
+    public void setSound(String sound) {
+        this.sound = sound;
     }
 }

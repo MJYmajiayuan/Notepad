@@ -46,7 +46,6 @@ public class RecordActivity extends AppCompatActivity implements View.OnTouchLis
         recordText = (TextView) findViewById(R.id.record_text);
         recordImg = (ImageView) findViewById(R.id.record_img);
 
-
         recordImg.setOnTouchListener(this);
     }
 
@@ -61,7 +60,7 @@ public class RecordActivity extends AppCompatActivity implements View.OnTouchLis
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                recordText.setText("录制中");
+                recordText.setText("录制中...");
                 recordImg.setImageResource(R.drawable.icon_record_press);
                 break;
             case MotionEvent.ACTION_UP:
