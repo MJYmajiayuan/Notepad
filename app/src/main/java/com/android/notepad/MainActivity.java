@@ -59,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
         NoteAdapter noteAdapter = new NoteAdapter(this, mainViewModel.noteList, mainViewModel.noteBitmapMap);
         noteRecycler.setAdapter(noteAdapter);
 
+        List<Integer> tempList = mainViewModel.queryNoteByContent("11");
+
+        Log.d("MainActivity", "List size: " + tempList.size());
+        for (int i : tempList) {
+            Log.d("MainActivity", i + "");
+        }
+
         /**
          * 通过点击悬浮按钮进入编辑界面
          * 悬浮按钮点击事件，点击后进入编辑界面
@@ -75,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         mainViewModel.noteLiveData.observe(this, new Observer<List<Note>>() {
             @Override
             public void onChanged(List<Note> notes) {
-                Log.d("MainActivity", "onChange");
+//                Log.d("MainActivity", "onChange");
                 noteAdapter.notifyDataSetChanged();
             }
         });
@@ -99,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("MainActivity", "onResume refresh");
+//        Log.d("MainActivity", "onResume refresh");
         mainViewModel.refreshNoteList(this, clickId);
     }
 

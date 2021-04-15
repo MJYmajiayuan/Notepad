@@ -3,6 +3,7 @@ package com.android.notepad.login;
 import android.content.Context;
 
 import com.android.notepad.login.dao.NoteDao;
+import com.android.notepad.login.dao.NoteDatabaseHelper;
 import com.android.notepad.login.model.Note;
 
 import java.util.List;
@@ -38,5 +39,9 @@ public class Repository {
 
     public Note queryNoteById(int id) {
         return NoteDao.getInstance().queryNoteById(id);
+    }
+
+    public List<Integer> queryNoteByContent(String content) {
+        return NoteDao.getInstance().queryNoteByContent(content);
     }
 }

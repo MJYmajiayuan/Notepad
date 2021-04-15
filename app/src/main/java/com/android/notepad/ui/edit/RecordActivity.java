@@ -1,11 +1,16 @@
 package com.android.notepad.ui.edit;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -17,6 +22,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.notepad.R;
 
@@ -97,7 +103,7 @@ public class RecordActivity extends AppCompatActivity implements View.OnTouchLis
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);        // 音频输入源
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_WB);   // 输出格式
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);   // 设置编码格式
-            mediaRecorder.setOutputFile(soundFile.getAbsolutePath());
+            mediaRecorder.setOutputFile(soundFile.getAbsolutePath());           // 设置输出文件
             mediaRecorder.prepare();
             mediaRecorder.start();
         }

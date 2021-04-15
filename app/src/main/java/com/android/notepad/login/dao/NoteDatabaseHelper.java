@@ -8,13 +8,18 @@ import androidx.annotation.Nullable;
 
 public class NoteDatabaseHelper extends SQLiteOpenHelper {
 
-    private String createBook = "create table Note (" +
+    private String createNote = "create table Note (" +
             "id integer primary key autoincrement," +
             "content text," +
             "time text," +
             "timestamp bigint," +
             "image text," +
             "sound text)";
+
+    private String createVirtualTable = "create virtual table VirtualNote using fts3 (id, content)";
+
+    private String initVirtualTable = "insert into VirtualNote(id, content)" +
+            "select id, content from Note";
 
     public NoteDatabaseHelper(@Nullable Context context, @Nullable String name,
                               @Nullable SQLiteDatabase.CursorFactory factory, int version) {
@@ -23,7 +28,9 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(createBook);
+        db.execSQL(createNote);
+//        db.execSQL(createVirtualTable);
+//        db.execSQL(initVirtualTable);
     }
 
     @Override

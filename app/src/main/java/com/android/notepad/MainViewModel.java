@@ -41,6 +41,10 @@ public class MainViewModel extends ViewModel {
         return Repository.getInstance().queryNoteById(noteId);
     }
 
+    public List<Integer> queryNoteByContent(String content) {
+        return Repository.getInstance().queryNoteByContent(content);
+    }
+
     public void refreshNoteList(Context context, int noteId) {
 
         noteList.clear();
@@ -50,22 +54,8 @@ public class MainViewModel extends ViewModel {
         noteBitmapMap.clear();
         for (Note note : noteList) {
             if (note.getImage() != null) {
-//                FileInputStream inputImage = null;
                 Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
                 noteBitmapMap.put(note.getId(), bitmap);
-//                try {
-//                    inputImage = context.openFileInput(note.getImage());
-//                    Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
-//                    noteBitmapMap.put(note.getId(), bitmap);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    try {
-//                        inputImage.close();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
             }
         }
         noteBitmapMapLiveData.setValue(noteBitmapMap);

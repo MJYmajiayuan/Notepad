@@ -3,6 +3,7 @@ package com.android.notepad.ui.home;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,13 +31,15 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> im
 
         ImageView imageItem;
         TextView contentText;
+        ImageView imageSound;
         TextView timeText;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageItem = itemView.findViewById(R.id.image_item);
-            contentText = itemView.findViewById(R.id.content_text);
-            timeText = itemView.findViewById(R.id.time_text);
+            imageItem = (ImageView) itemView.findViewById(R.id.image_item);
+            contentText = (TextView) itemView.findViewById(R.id.content_text);
+            imageSound = (ImageView) itemView.findViewById(R.id.image_sound);
+            timeText = (TextView) itemView.findViewById(R.id.time_text);
         }
     }
 
@@ -56,7 +59,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> im
         this.noteList = noteList;
         this.context = context;
         this.noteBitmapMap = noteBitmapMap;
-
     }
 
     @NonNull
@@ -77,8 +79,20 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> im
         holder.imageItem.setImageBitmap(bitmap);
         UiUtil.adjustImageView(context, holder.imageItem, bitmap);
 
-        holder.contentText.setText(note.getContent());
-        holder.timeText.setText(note.getTime());
+        String noteContent = note.getContent();
+        String noteTime = note.getTime();
+        String noteSound = note.getSound();
+        holder.contentText.setText(noteContent);
+        holder.timeText.setText(noteTime);
+        if (!TextUtils.isEmpty(noteSound)) {
+            holder.imageSound.setVisibility(View.VISIBLE);
+            if (TextUtils.isEmpty(noteContent)
+                    && TextUtils.isEmpty(note.getImage())) {
+                holder.contentText.setText("语音记事");
+            }
+        } else {
+            holder.imageSound.setVisibility(View.GONE);
+        }
         // 保存position
         holder.itemView.setTag(position);
     }

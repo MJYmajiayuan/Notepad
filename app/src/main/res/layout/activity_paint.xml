@@ -11,6 +11,7 @@
         android:background="@color/white"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:elevation="8dp"
         app:navigationIcon="@drawable/ic_baseline_close_24"/>
 
     <com.android.notepad.ui.edit.PaintView

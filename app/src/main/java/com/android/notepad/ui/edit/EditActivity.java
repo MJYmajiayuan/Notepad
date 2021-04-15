@@ -4,12 +4,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -33,6 +37,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.notepad.R;
 import com.android.notepad.login.Repository;
@@ -56,6 +61,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private final int FROM_ALBUM = 2;
     private final int RECORD = 3;
     private final int PAINT = 4;
+    // 用于申请录音权限
+    private final int REQUEST_RECORD_AUDIO = 1;
 
     private Toolbar editToolbar;
     private ImageView imageView;
@@ -232,8 +239,15 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(docIntent, FROM_ALBUM);
                 break;
             case R.id.insert_voice_btn:     // 点击语音按钮
-                Intent recordIntent = new Intent(EditActivity.this, RecordActivity.class);
-                startActivityForResult(recordIntent, RECORD);
+                // 动态申请录音权限
+                if (ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[] { Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO);
+                } else {
+                    Intent recordIntent = new Intent(EditActivity.this, RecordActivity.class);
+                    startActivityForResult(recordIntent, RECORD);
+                }
                 break;
             case R.id.insert_draw_btn:      // 点击画图按钮
                 Intent paintIntent = new Intent(EditActivity.this, PaintActivity.class);
@@ -318,6 +332,27 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             }
+        }
+    }
+
+    /**
+     * 权限申请回调方法
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_RECORD_AUDIO:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent recordIntent = new Intent(EditActivity.this, RecordActivity.class);
+                    startActivityForResult(recordIntent, RECORD);
+                } else {
+                    Toast.makeText(this, "请打开录音权限", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
 
