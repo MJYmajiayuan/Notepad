@@ -3,6 +3,7 @@ package com.android.notepad.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,21 +14,23 @@ import com.android.notepad.login.model.Tag;
 
 import java.util.List;
 
-public class DrawerTagAdapter extends RecyclerView.Adapter<DrawerTagAdapter.ViewHolder> {
+public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
+        ImageView tagImg;
         TextView tagName;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            tagImg = (ImageView) itemView.findViewById(R.id.tag_img);
             tagName = (TextView) itemView.findViewById(R.id.tag_text);
         }
     }
 
     private List<Tag> tagList;
 
-    public DrawerTagAdapter(List<Tag> tagList) {
+    public TagAdapter(List<Tag> tagList) {
         this.tagList = tagList;
     }
 
@@ -41,6 +44,7 @@ public class DrawerTagAdapter extends RecyclerView.Adapter<DrawerTagAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Tag tag = tagList.get(position);
+        holder.tagImg.setImageResource(R.drawable.icon_label);
         holder.tagName.setTag(tag.getTagName());
     }
 

@@ -9,18 +9,17 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.android.notepad.adapter.DrawerTagAdapter;
 import com.android.notepad.login.model.Note;
 import com.android.notepad.login.model.Tag;
 import com.android.notepad.ui.edit.EditActivity;
@@ -28,10 +27,9 @@ import com.android.notepad.adapter.NoteAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private final int FROM_BUTTON = 1;
     private final int FROM_ITEM = 2;
@@ -44,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
     private MainViewModel mainViewModel;
 
     private NavigationView navigationView;
+
+    // 标签列表
+    private List<Tag> tagList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         mainViewModel.createNoteDatabase(this);  // 创建数据库
         mainViewModel.refreshNoteList(this);    //刷新列表以获取数据
 
-
+        refreshNavigationView();
         // 通过查询Tag表设置NavigationView
 //        List<Tag> tagList = mainViewModel.queryTag();
 //        for (int i = 0; i < tagList.size(); i++) {
@@ -115,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 //        Log.d("MainActivity", "onResume refresh");
         mainViewModel.refreshNoteList(this);
+        refreshNavigationView();
     }
 
     @Override
@@ -169,6 +171,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 侧边栏item点击事件
+     */
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == 0) {
+
+        } else if (item.getItemId() == tagList.size() + 1) {
+            Intent intent = new Intent(MainActivity.this, AddTagActivity.class);
+            startActivity(intent);
+            mainDrawerLayout.closeDrawers();
+        } else {
+
+        }
+        return true;
+    }
+
+
+    /**
      * 初始化控件
      */
     private void initComponents() {
@@ -180,6 +200,21 @@ public class MainActivity extends AppCompatActivity {
         navigationView = (NavigationView) findViewById(R.id.nav_View);
     }
 
+    private void refreshNavigationView() {
+        navigationView.getMenu().removeGroup(0);
+        navigationView.getMenu().add(0, 0, 0, "全部记事");
+        navigationView.getMenu().getItem(0).setIcon(R.drawable.ic_baseline_event_note_24);
+        tagList = mainViewModel.queryTag();
+        int tagListSize = tagList.size();
+        for (int i = 1; i <= tagListSize; i++) {
+            navigationView.getMenu().add(0, i, i, tagList.get(i - 1).getTagName());
+            navigationView.getMenu().getItem(i).setIcon(R.drawable.ic_baseline_label_24);
+        }
+        navigationView.getMenu().add(0, tagListSize + 1, tagListSize + 1, "添加新标签");
+        navigationView.getMenu().getItem(tagListSize + 1).setIcon(R.drawable.ic_baseline_add_24);
+        navigationView.setNavigationItemSelectedListener(this);
+    }
+
     /**
      * 初始化数据
      */
@@ -187,9 +222,5 @@ public class MainActivity extends AppCompatActivity {
         noteList.addAll(mainViewModel.queryNote());
     }
 
-    private void initTags(List<Tag> tagList) {
-        tagList.add(new Tag(1, "111", 10));
-        tagList.add(new Tag(2, "222", 1));
-        tagList.add(new Tag(3, "333", 9));
-    }
+
 }

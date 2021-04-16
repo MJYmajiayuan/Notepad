@@ -45,6 +45,7 @@ public class RecordActivity extends AppCompatActivity implements View.OnTouchLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
 
+        // 设置该Activity的宽度
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
         layoutParams.width = (int) (getResources().getDisplayMetrics().widthPixels / 1.5);
         getWindow().setAttributes(layoutParams);

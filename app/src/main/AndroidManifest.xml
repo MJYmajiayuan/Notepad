@@ -10,11 +10,17 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MaterialComponents.Light.NoActionBar.Bridge"
-        android:requestLegacyExternalStorage="true">
-        <activity android:name=".ui.edit.PaintActivity"></activity>
+        android:theme="@style/Theme.MaterialComponents.Light.NoActionBar.Bridge">
+        <activity
+            android:name=".AddTagActivity"
+            android:theme="@style/TagTheme" />
+        <activity
+            android:name=".ui.edit.TagActivity"
+            android:theme="@style/TagTheme" />
+        <activity android:name=".ui.edit.PaintActivity" />
         <activity
             android:name=".ui.edit.RecordActivity"
             android:theme="@style/RecordTheme" />

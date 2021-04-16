@@ -36,7 +36,6 @@ public class TagDao {
      */
     public void insertTag(Tag tag) {
         ContentValues values = new ContentValues();
-        values.put("tag_id", tag.getTagId());
         values.put("tag_name", tag.getTagName());
         values.put("tag_num", tag.getTagNum());
         db.insert("Tag", null, values);

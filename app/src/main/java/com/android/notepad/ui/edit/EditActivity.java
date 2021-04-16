@@ -193,6 +193,10 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 finish();
                 return true;
+            case R.id.add_tag:
+                Intent intent = new Intent(EditActivity.this, TagActivity.class);
+                startActivity(intent);
+                break;
             case R.id.delete_note:      // 点击删除键事件
                 int noteId = getIntent().getIntExtra("noteId", 0);
                 if (noteId != 0) {
