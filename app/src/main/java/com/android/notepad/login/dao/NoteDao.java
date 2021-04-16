@@ -40,6 +40,7 @@ public class NoteDao {
         values.put("timestamp", note.getTimestamp());
         values.put("image", note.getImage());
         values.put("sound", note.getSound());
+        values.put("tag_id", note.getTagId());
         db.insert("Note", null, values);
     }
 
@@ -54,6 +55,7 @@ public class NoteDao {
         values.put("timestamp", note.getTimestamp());
         values.put("image", note.getImage());
         values.put("sound", note.getSound());
+        values.put("tag_id", note.getTagId());
         db.update("Note", values, "id = ?", new String[] { String.valueOf(note.getId()) });
     }
 
@@ -81,7 +83,8 @@ public class NoteDao {
                 long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
                 String image = cursor.getString(cursor.getColumnIndex("image"));
                 String sound = cursor.getString(cursor.getColumnIndex("sound"));
-                Note note = new Note(id, content, time, timestamp, image, sound);
+                int tagId = cursor.getInt(cursor.getColumnIndex("tag_id"));
+                Note note = new Note(id, content, time, timestamp, image, sound, tagId);
                 noteList.add(note);
             } while (cursor.moveToPrevious());
         }
@@ -105,15 +108,14 @@ public class NoteDao {
             note.setTimestamp(cursor.getLong(cursor.getColumnIndex("timestamp")));
             note.setImage(cursor.getString(cursor.getColumnIndex("image")));
             note.setSound(cursor.getString(cursor.getColumnIndex("sound")));
+            note.setTagId(cursor.getInt(cursor.getColumnIndex("tag_id")));
         }
         cursor.close();
         return note;
     }
 
     /**
-     * 使用FTS3查询指定内容
-     * @param noteContent
-     * @return
+     * 指定内容
      */
     public List<Note> queryNoteByContent(String noteContent) {
         List<Note> noteList = new ArrayList<>();
@@ -127,7 +129,8 @@ public class NoteDao {
                 long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
                 String image = cursor.getString(cursor.getColumnIndex("image"));
                 String sound = cursor.getString(cursor.getColumnIndex("sound"));
-                Note note = new Note(id, content, time, timestamp, image, sound);
+                int tagId = cursor.getInt(cursor.getColumnIndex("tag_id"));
+                Note note = new Note(id, content, time, timestamp, image, sound, tagId);
                 noteList.add(note);
             } while (cursor.moveToPrevious());
         }

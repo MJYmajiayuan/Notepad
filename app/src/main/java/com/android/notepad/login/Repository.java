@@ -55,4 +55,12 @@ public class Repository {
     public void insertTag(Tag tag) {
         TagDao.getInstance().insertTag(tag);
     }
+
+    public void updateTag(Tag tag) {
+        TagDao.getInstance().updateTag(tag);
+    }
+
+    public void deleteTag(int tagId) {
+        TagDao.getInstance().deleteTag(tagId);
+    }
 }

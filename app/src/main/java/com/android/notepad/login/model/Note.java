@@ -10,24 +10,28 @@ public class Note implements Serializable {
     private long timestamp;
     private String image;
     private String sound;
+    private int tagId;
 
     public Note() {
     }
 
-    public Note (String content, String time, long timestamp, String image, String sound) {
+    public Note (String content, String time, long timestamp, String image, String sound, int tagId) {
         this.content = content;
         this.time = time;
         this.timestamp = timestamp;
         this.image = image;
+        this.sound = sound;
+        this.tagId = tagId;
     }
 
-    public Note(int id, String content, String time, long timestamp, String image, String sound) {
+    public Note(int id, String content, String time, long timestamp, String image, String sound, int tag_id) {
         this.id = id;
         this.content = content;
         this.time = time;
         this.timestamp = timestamp;
         this.image = image;
         this.sound = sound;
+        this.tagId = tagId;
     }
 
     public int getId() {
@@ -76,5 +80,13 @@ public class Note implements Serializable {
 
     public void setSound(String sound) {
         this.sound = sound;
+    }
+
+    public int getTagId() {
+        return tagId;
+    }
+
+    public void setTagId(int tagId) {
+        this.tagId = tagId;
     }
 }

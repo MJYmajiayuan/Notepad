@@ -59,4 +59,24 @@ public class TagDao {
         cursor.close();
         return tagList;
     }
+
+    /**
+     * 更新标签
+     * @param tag 标签对象
+     */
+    public void updateTag(Tag tag) {
+        ContentValues values = new ContentValues();
+        values.put("tag_id", tag.getTagId());
+        values.put("tag_name", tag.getTagName());
+        values.put("tag_num", tag.getTagNum());
+        db.update("Tag", values, "tag_id = ?", new String[] { String.valueOf(tag.getTagId()) });
+    }
+
+    /**
+     * 删除标签
+     * @param tagId 标签id
+     */
+    public void deleteTag(int tagId) {
+        db.delete("Tag", "tag_id = ?", new String[] { String.valueOf(tagId) });
+    }
 }

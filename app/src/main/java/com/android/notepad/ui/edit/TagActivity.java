@@ -6,12 +6,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.android.notepad.R;
 import com.android.notepad.adapter.TagAdapter;
 import com.android.notepad.login.Repository;
+import com.android.notepad.login.model.Note;
 import com.android.notepad.login.model.Tag;
 
 import java.util.List;
@@ -35,7 +37,9 @@ public class TagActivity extends AppCompatActivity {
         List<Tag> tagList = Repository.getInstance().queryTag();
         RecyclerView.LayoutManager tagLayoutManager = new LinearLayoutManager(this);
         tagRecyclerView.setLayoutManager(tagLayoutManager);
-        TagAdapter tagAdapter = new TagAdapter(tagList);
+        int noteId = getIntent().getIntExtra("noteId", 0);
+        Note note = Repository.getInstance().queryNoteById(noteId);
+        TagAdapter tagAdapter = new TagAdapter(this, tagList, note);
         tagRecyclerView.setAdapter(tagAdapter);
 
     }

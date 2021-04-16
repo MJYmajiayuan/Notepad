@@ -184,7 +184,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:     // 点击返回键事件
+            case android.R.id.home: {   // 点击返回键事件
                 Log.d("EditActivity", "home click");
                 try {
                     saveNote();
@@ -193,18 +193,22 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 finish();
                 return true;
-            case R.id.add_tag:
+            }
+            case R.id.add_tag: {        // 点击添加标签按钮事件
+                int noteId = getIntent().getIntExtra("noteId", 0);
                 Intent intent = new Intent(EditActivity.this, TagActivity.class);
+                intent.putExtra("noteId", noteId);
                 startActivity(intent);
                 break;
-            case R.id.delete_note:      // 点击删除键事件
+            }
+            case R.id.delete_note: {    // 点击删除键事件
                 int noteId = getIntent().getIntExtra("noteId", 0);
                 if (noteId != 0) {
                     Repository.getInstance().deleteNote(noteId);
                 }
                 finish();
                 return true;
-
+            }
         }
         return super.onOptionsItemSelected(item);
     }
