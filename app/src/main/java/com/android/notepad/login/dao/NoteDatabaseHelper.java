@@ -14,12 +14,14 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
             "time text," +
             "timestamp bigint," +
             "image text," +
-            "sound text)";
+            "sound text," +
+            "tag_id integer," +
+            "foreign key (tag_id) references Tag(tag_id))";
 
-    private String createVirtualTable = "create virtual table VirtualNote using fts3 (id, content)";
-
-    private String initVirtualTable = "insert into VirtualNote(id, content)" +
-            "select id, content from Note";
+    private String createTag = "create table Tag (" +
+            "tag_id integer primary key autoincrement," +
+            "tag_name text," +
+            "tag_num integer)";
 
     public NoteDatabaseHelper(@Nullable Context context, @Nullable String name,
                               @Nullable SQLiteDatabase.CursorFactory factory, int version) {
@@ -28,15 +30,19 @@ public class NoteDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL(createTag);
         db.execSQL(createNote);
-//        db.execSQL(createVirtualTable);
-//        db.execSQL(initVirtualTable);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion <= 1) {
-            db.execSQL("alter table Note add column sound text");
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (!db.isReadOnly()) {
+            db.execSQL("PRAGMA foreign_keys=ON;");
         }
     }
 }

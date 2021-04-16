@@ -5,45 +5,45 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 
+import com.android.notepad.adapter.DrawerTagAdapter;
 import com.android.notepad.login.model.Note;
+import com.android.notepad.login.model.Tag;
 import com.android.notepad.ui.edit.EditActivity;
-import com.android.notepad.ui.home.NoteAdapter;
+import com.android.notepad.adapter.NoteAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
     private final int FROM_BUTTON = 1;
     private final int FROM_ITEM = 2;
 
+    private DrawerLayout mainDrawerLayout;
     private Toolbar mainToolbar;
     private FloatingActionButton editBtn;
     private RecyclerView noteRecycler;
+    private RecyclerView drawerRecycler;
     private MainViewModel mainViewModel;
+
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,21 +53,29 @@ public class MainActivity extends AppCompatActivity {
         initComponents();   // 初始化组件和布局
         setSupportActionBar(mainToolbar);     // 设置自定义标题栏
         if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);   // 创建ViewModel对象
-
-
         mainViewModel.createNoteDatabase(this);  // 创建数据库
+        mainViewModel.refreshNoteList(this);    //刷新列表以获取数据
 
-        mainViewModel.refreshNoteList(this);
 
-        RecyclerView.LayoutManager layoutManager= new StaggeredGridLayoutManager(2,
+        // 通过查询Tag表设置NavigationView
+//        List<Tag> tagList = mainViewModel.queryTag();
+//        for (int i = 0; i < tagList.size(); i++) {
+//            navigationView.getMenu().add(tagList.get(i).getTagName());
+//            navigationView.getMenu().getItem(i).setIcon(R.drawable.ic_baseline_label_24);
+//        }
+
+        RecyclerView.LayoutManager mainLayoutManager= new StaggeredGridLayoutManager(2,
                 StaggeredGridLayoutManager.VERTICAL);   // 瀑布流布局
-        noteRecycler.setLayoutManager(layoutManager);
+        noteRecycler.setLayoutManager(mainLayoutManager);
         NoteAdapter noteAdapter = new NoteAdapter(this, mainViewModel.noteList, mainViewModel.noteBitmapMap);
         noteRecycler.setAdapter(noteAdapter);
+
 
         /**
          * 通过点击悬浮按钮进入编辑界面
@@ -90,10 +98,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /**
-         * 通过点击item进入编辑界面
-         * 设置item的点击事件
-         */
+        // 通过点击item进入编辑界面，设置item的点击事件
         noteAdapter.setOnItemClickListener(new NoteAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(RecyclerView parent, View view, int position, int noteId) {
@@ -118,19 +123,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 加载edit_toolbar.xml布局
-     * @param menu
-     * @return
+     * 加载main_toolbar.xml布局
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_toolbar, menu);
 
+        // 初始化SearchView
         MenuItem searchItem = menu.findItem(R.id.main_search);
         SearchView mainSearch = null;
         if (searchItem != null) {
             mainSearch = (SearchView) searchItem.getActionView();
         }
+        // 给SearchView添加监听事件
         mainSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -150,8 +155,16 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * 点击toolbar按钮事件
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                mainDrawerLayout.openDrawer(GravityCompat.START);
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -159,9 +172,12 @@ public class MainActivity extends AppCompatActivity {
      * 初始化控件
      */
     private void initComponents() {
+        mainDrawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
         mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         editBtn = (FloatingActionButton) findViewById(R.id.edit_btn);
         noteRecycler = (RecyclerView) findViewById(R.id.note_recycler_view);
+//        drawerRecycler = (RecyclerView) findViewById(R.id.drawer_recycler_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_View);
     }
 
     /**
@@ -169,5 +185,11 @@ public class MainActivity extends AppCompatActivity {
      */
     private void initNotes(List<Note> noteList) {
         noteList.addAll(mainViewModel.queryNote());
+    }
+
+    private void initTags(List<Tag> tagList) {
+        tagList.add(new Tag(1, "111", 10));
+        tagList.add(new Tag(2, "222", 1));
+        tagList.add(new Tag(3, "333", 9));
     }
 }

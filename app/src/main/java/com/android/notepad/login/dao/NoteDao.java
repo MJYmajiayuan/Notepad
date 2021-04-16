@@ -3,20 +3,17 @@ package com.android.notepad.login.dao;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.android.notepad.login.model.Note;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class NoteDao {
     private static NoteDao noteDao;
-    NoteDatabaseHelper noteDatabaseHelper;
-    SQLiteDatabase db;
+    private SQLiteDatabase db;
     public static NoteDao getInstance() {
         if (noteDao == null) {
             noteDao = new NoteDao();
@@ -29,8 +26,7 @@ public class NoteDao {
      * @param context
      */
     public void createNoteDatabase(Context context) {
-        noteDatabaseHelper = new NoteDatabaseHelper(context, "note_store.db", null, 2);
-        db = noteDatabaseHelper.getWritableDatabase();
+        db = DatabaseUtils.getDatabase(context);
     }
 
     /**
@@ -121,7 +117,7 @@ public class NoteDao {
      */
     public List<Note> queryNoteByContent(String noteContent) {
         List<Note> noteList = new ArrayList<>();
-        Cursor cursor = db.rawQuery("select * from Note where content like ?", new String[] { "%" + noteContent + "%" });
+        Cursor cursor = db.rawQuery("select * from Note where content like ? order by timestamp", new String[] { "%" + noteContent + "%" });
 
         if (cursor.moveToLast()) {
             do {

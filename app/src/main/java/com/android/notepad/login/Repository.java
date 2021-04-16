@@ -4,7 +4,9 @@ import android.content.Context;
 
 import com.android.notepad.login.dao.NoteDao;
 import com.android.notepad.login.dao.NoteDatabaseHelper;
+import com.android.notepad.login.dao.TagDao;
 import com.android.notepad.login.model.Note;
+import com.android.notepad.login.model.Tag;
 
 import java.util.List;
 
@@ -19,6 +21,7 @@ public class Repository {
 
     public void createNoteDatabase(Context context) {
         NoteDao.getInstance().createNoteDatabase(context);
+        TagDao.getInstance().createNoteDatabase(context);
     }
 
     public void insertNote(Note note) {
@@ -43,5 +46,13 @@ public class Repository {
 
     public List<Note> queryNoteByContent(String content) {
         return NoteDao.getInstance().queryNoteByContent(content);
+    }
+
+    public List<Tag> queryTag() {
+        return TagDao.getInstance().queryTag();
+    }
+
+    public void insertTag(Tag tag) {
+        TagDao.getInstance().insertTag(tag);
     }
 }

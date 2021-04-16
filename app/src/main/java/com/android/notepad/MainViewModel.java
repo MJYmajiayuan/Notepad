@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
+import com.android.notepad.login.model.Tag;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +44,14 @@ public class MainViewModel extends ViewModel {
 
     public List<Note> queryNoteByContent(String content) {
         return Repository.getInstance().queryNoteByContent(content);
+    }
+
+    public List<Tag> queryTag() {
+        return Repository.getInstance().queryTag();
+    }
+
+    public void insertTag(Tag tag) {
+        Repository.getInstance().insertTag(tag);
     }
 
     public void refreshNoteList(Context context) {
