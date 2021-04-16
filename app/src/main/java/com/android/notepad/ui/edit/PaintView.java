@@ -95,8 +95,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
         }
     }
 
-
-
     /**
      * 初始化View
      */

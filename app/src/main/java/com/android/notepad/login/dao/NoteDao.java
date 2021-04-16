@@ -116,30 +116,26 @@ public class NoteDao {
 
     /**
      * 使用FTS3查询指定内容
-     * @param content
+     * @param noteContent
      * @return
      */
-    public List<Integer> queryNoteByContent(String content) {
-        List<Integer> noteIdList = new ArrayList<>();
-        Cursor cursor;
-        try {
-            db.execSQL("delete from VirtualNote");
-            db.execSQL("insert into VirtualNote(id, content) select id, content from Note");
-            cursor = db.rawQuery("select id from VirtualNote" ,null);
-            cursor = db.rawQuery("select id from VirtualNote where content like ?", new String[] { "%" + content + "%" });
-//            cursor = db.query("VirtualNote", null, "content match ?", new String[] { content }, null, null, null);
-        } catch (SQLException e) {
-            db.execSQL("create virtual table VirtualNote using fts3 (id, content)");
-            db.execSQL("insert into VirtualNote(id, content) select id, content from Note");
-            cursor = db.rawQuery("select id from VirtualNote where content like ?", new String[] { "%" + content + "%" });
-//            cursor = db.query("VirtualNote", null, "content match ?", new String[] { content }, null, null, null);
-        }
-        if (cursor.moveToFirst()) {
+    public List<Note> queryNoteByContent(String noteContent) {
+        List<Note> noteList = new ArrayList<>();
+        Cursor cursor = db.rawQuery("select * from Note where content like ?", new String[] { "%" + noteContent + "%" });
+
+        if (cursor.moveToLast()) {
             do {
-                noteIdList.add(cursor.getInt(cursor.getColumnIndex("id")));
-            } while (cursor.moveToNext());
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                String content = cursor.getString(cursor.getColumnIndex("content"));
+                String time = cursor.getString(cursor.getColumnIndex("time"));
+                long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
+                String image = cursor.getString(cursor.getColumnIndex("image"));
+                String sound = cursor.getString(cursor.getColumnIndex("sound"));
+                Note note = new Note(id, content, time, timestamp, image, sound);
+                noteList.add(note);
+            } while (cursor.moveToPrevious());
         }
         cursor.close();
-        return noteIdList;
+        return noteList;
     }
 }

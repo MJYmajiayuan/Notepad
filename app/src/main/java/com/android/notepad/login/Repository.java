@@ -41,7 +41,7 @@ public class Repository {
         return NoteDao.getInstance().queryNoteById(id);
     }
 
-    public List<Integer> queryNoteByContent(String content) {
+    public List<Note> queryNoteByContent(String content) {
         return NoteDao.getInstance().queryNoteByContent(content);
     }
 }

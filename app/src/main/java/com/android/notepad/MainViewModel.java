@@ -41,14 +41,29 @@ public class MainViewModel extends ViewModel {
         return Repository.getInstance().queryNoteById(noteId);
     }
 
-    public List<Integer> queryNoteByContent(String content) {
+    public List<Note> queryNoteByContent(String content) {
         return Repository.getInstance().queryNoteByContent(content);
     }
 
-    public void refreshNoteList(Context context, int noteId) {
+    public void refreshNoteList(Context context) {
 
         noteList.clear();
         noteList.addAll(queryNote());
+        noteLiveData.setValue(noteList);
+
+        noteBitmapMap.clear();
+        for (Note note : noteList) {
+            if (note.getImage() != null) {
+                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+                noteBitmapMap.put(note.getId(), bitmap);
+            }
+        }
+        noteBitmapMapLiveData.setValue(noteBitmapMap);
+    }
+
+    public void refreshNoteListBySearch(Context context, String content) {
+        noteList.clear();
+        noteList.addAll(queryNoteByContent(content));
         noteLiveData.setValue(noteList);
 
         noteBitmapMap.clear();

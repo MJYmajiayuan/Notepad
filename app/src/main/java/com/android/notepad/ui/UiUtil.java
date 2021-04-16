@@ -78,6 +78,7 @@ public class UiUtil {
                 ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
                 if (bitmap == null) {
                     layoutParams.height = 0;
+                    imageView.setLayoutParams(layoutParams);
                 } else {
                     if (bitmap.getWidth() > imageView.getWidth()) {
                         imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
