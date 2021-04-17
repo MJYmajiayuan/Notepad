@@ -2,6 +2,7 @@ package com.android.notepad;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -12,7 +13,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // 标签列表
     private List<Tag> tagList;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,12 +69,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mainViewModel.refreshNoteList(this);    //刷新列表以获取数据
 
         refreshNavigationView();
-        // 通过查询Tag表设置NavigationView
-//        List<Tag> tagList = mainViewModel.queryTag();
-//        for (int i = 0; i < tagList.size(); i++) {
-//            navigationView.getMenu().add(tagList.get(i).getTagName());
-//            navigationView.getMenu().getItem(i).setIcon(R.drawable.ic_baseline_label_24);
-//        }
 
         RecyclerView.LayoutManager mainLayoutManager= new StaggeredGridLayoutManager(2,
                 StaggeredGridLayoutManager.VERTICAL);   // 瀑布流布局
@@ -111,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onResume() {
         super.onResume();
@@ -175,15 +175,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == 0) {
-
-        } else if (item.getItemId() == tagList.size() + 1) {
-            Intent intent = new Intent(MainActivity.this, AddTagActivity.class);
-            startActivity(intent);
-            mainDrawerLayout.closeDrawers();
+        item.setCheckable(true);
+        item.setChecked(true);
+        if (item.getGroupId() == 0) {       // 全部记事
+            mainViewModel.refreshNoteList(this);
         } else {
-
+            if (item.getItemId() == tagList.size() + 1) {
+                Intent intent = new Intent(MainActivity.this, AddTagActivity.class);
+                startActivity(intent);
+                mainDrawerLayout.closeDrawers();
+            } else {
+                int tagId = tagList.get(item.getItemId() - 1).getTagId();
+                mainViewModel.refreshNoteListByTag(this, tagId);
+            }
         }
+        mainDrawerLayout.closeDrawers();
         return true;
     }
 
@@ -200,18 +206,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView = (NavigationView) findViewById(R.id.nav_View);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private void refreshNavigationView() {
         navigationView.getMenu().removeGroup(0);
+        navigationView.getMenu().removeGroup(1);
+
         navigationView.getMenu().add(0, 0, 0, "全部记事");
         navigationView.getMenu().getItem(0).setIcon(R.drawable.ic_baseline_event_note_24);
+        navigationView.getMenu().getItem(0).setCheckable(true);
+        navigationView.getMenu().getItem(0).setChecked(true);
         tagList = mainViewModel.queryTag();
         int tagListSize = tagList.size();
         for (int i = 1; i <= tagListSize; i++) {
-            navigationView.getMenu().add(0, i, i, tagList.get(i - 1).getTagName());
+            navigationView.getMenu().add(1, i, i, tagList.get(i - 1).getTagName());
             navigationView.getMenu().getItem(i).setIcon(R.drawable.ic_baseline_label_24);
         }
-        navigationView.getMenu().add(0, tagListSize + 1, tagListSize + 1, "添加新标签");
+        navigationView.getMenu().add(1, tagListSize + 1, tagListSize + 1, "添加新标签");
         navigationView.getMenu().getItem(tagListSize + 1).setIcon(R.drawable.ic_baseline_add_24);
+        @SuppressLint("ResourceType") ColorStateList colorStateList = (ColorStateList) getColorStateList(R.animator.navigation_color);
+        navigationView.setItemTextColor(colorStateList);
         navigationView.setNavigationItemSelectedListener(this);
     }
 

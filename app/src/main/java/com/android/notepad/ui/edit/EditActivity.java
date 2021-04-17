@@ -11,11 +11,15 @@ import androidx.core.content.FileProvider;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
+import android.app.AlarmManager;
+import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -23,36 +27,38 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.WindowManager;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.notepad.R;
+import com.android.notepad.broadcast.AlarmReceiver;
 import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
 import com.android.notepad.ui.UiUtil;
+import com.bigkoo.pickerview.builder.TimePickerBuilder;
+import com.bigkoo.pickerview.listener.OnTimeSelectChangeListener;
+import com.bigkoo.pickerview.listener.OnTimeSelectListener;
+import com.bigkoo.pickerview.view.TimePickerView;
 
-import org.w3c.dom.Text;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class EditActivity extends AppCompatActivity implements View.OnClickListener {
@@ -78,6 +84,10 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private MediaPlayer mediaPlayer = null;
     private String soundFilePath = null;
     private String picFilePath = null;  // 图片文件名，包括照片和手绘
+    private TimePickerView pvTime;      // 第三方库的时间选择器对象
+    private int alarmSendCode = 0;
+//    private AlarmReceiver alarmReceiver;    // 广播接收器
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +116,9 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         Drawable soundDrawable = getResources().getDrawable(R.drawable.icon_sound);
         soundDrawable.setBounds(0, 0, 60, 60);
         playSoundBtn.setCompoundDrawables(null, soundDrawable, null, null);
+
+        // 初始化时间选择器对象
+        initTimePicker();
 
         // 若是个更新操作，将intent中的对象取出
         if ("update".equals(tag)) {
@@ -199,6 +212,10 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent = new Intent(EditActivity.this, TagActivity.class);
                 intent.putExtra("noteId", noteId);
                 startActivity(intent);
+                break;
+            }
+            case R.id.add_alarm: {      // 点击添加提醒按钮事件
+                pvTime.show();
                 break;
             }
             case R.id.delete_note: {    // 点击删除键事件
@@ -329,11 +346,11 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("EditActivity", "Paint");
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     picFilePath = data.getStringExtra("paintFilePath");
-                    Log.d("EditActivity", "paintFilePath: " + picFilePath);
+//                    Log.d("EditActivity", "paintFilePath: " + picFilePath);
                     // 从文件名获取Bitmap对象
                     Bitmap bitmap = BitmapFactory.decodeFile(picFilePath);
                     if (bitmap == null) {
-                        Log.d("EditActivity", "Bitmap is null.");
+//                        Log.d("EditActivity", "Bitmap is null.");
                     }
                     imageView.setImageBitmap(bitmap);
                     UiUtil.adjustImageView(this, imageView, bitmap);
@@ -345,9 +362,6 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 权限申请回调方法
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -419,7 +433,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 保存通过相机或者图库选择的图片
-     * @param bitmap
+     * @param bitmap Bitmap对象
      * @throws IOException
      */
     private void saveImgFile(Bitmap bitmap) throws IOException {
@@ -446,9 +460,106 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     * 初始化音频播放器
+     * @param soundFilePath 声音文件
+     * @throws IOException
+     */
     private void initMediaPlayer(String soundFilePath) throws IOException {
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setDataSource(soundFilePath);
         mediaPlayer.prepare();
+    }
+
+
+    /**
+     * 初始化时间选择器对象
+     */
+    private void initTimePicker() { // Dialog 模式下，在底部弹出
+        Calendar endCalender = Calendar.getInstance();
+        endCalender.set(2100, 1, 1, 0, 0, 0);
+        pvTime = new TimePickerBuilder(this, new OnTimeSelectListener() {
+            @Override
+            public void onTimeSelect(Date date, View v) {
+                Log.d("EditActivity", "onTimeSelect");
+                setAlarm(date);
+            }
+        })
+                .setTitleBgColor(Color.WHITE)
+                .setSubmitColor(Color.BLACK)
+                .setCancelColor(Color.BLACK)
+                .setRangDate(Calendar.getInstance(), endCalender)  // 设置起止时间
+                .setTimeSelectChangeListener(new OnTimeSelectChangeListener() {
+                    @Override
+                    public void onTimeSelectChanged(Date date) {
+                        Log.i("pvTime", "onTimeSelectChanged");
+                    }
+                })
+                .setType(new boolean[]{true, true, true, true, true, false})
+                .isDialog(true) //默认设置false ，内部实现将DecorView 作为它的父控件。
+                .addOnCancelClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.i("pvTime", "onCancelClickListener");
+                    }
+                })
+                .setItemVisibleCount(5) //若设置偶数，实际值会加1（比如设置6，则最大可见条目为7）
+                .setLineSpacingMultiplier(2.0f)
+                .isAlphaGradient(true)
+                .build();
+
+        Dialog mDialog = pvTime.getDialog();
+        if (mDialog != null) {
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    Gravity.BOTTOM);
+
+            params.leftMargin = 0;
+            params.rightMargin = 0;
+            pvTime.getDialogContainerLayout().setLayoutParams(params);
+
+            Window dialogWindow = mDialog.getWindow();
+            if (dialogWindow != null) {
+                dialogWindow.setWindowAnimations(com.bigkoo.pickerview.R.style.picker_view_slide_anim); //修改动画样式
+                dialogWindow.setGravity(Gravity.BOTTOM);    // 改成Bottom,底部显示
+                dialogWindow.setDimAmount(0.3f);
+            }
+        }
+    }
+
+    /**
+     * 设置提醒
+     * @param date 提醒的时间
+     */
+    private void setAlarm(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(date.getTime());
+        calendar.set(Calendar.SECOND, 0);   // 将提醒时间的秒置零，提醒时间只精确到分
+        long alarmTime = calendar.getTimeInMillis();    // 提醒时间转化为时间戳
+
+//        alarmReceiver = new AlarmReceiver();
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction("com.android.notepad.alarm");
+        Intent intent = new Intent(EditActivity.this, AlarmReceiver.class); // 设置到广播的intent
+        intent.setAction("com.android.notepad.alarm");
+
+        // 为广播传递note的id和内容
+        int noteId = getIntent().getIntExtra("noteId", 0);
+        Log.d("EditActivity", "noteId: " + noteId);
+        Note note = Repository.getInstance().queryNoteById(noteId);
+        intent.putExtra("noteId", noteId);
+        String alarmContent = note.getContent();
+        if (note.getImage() != null) {      // 当内容包含图片和手绘时
+            alarmContent = alarmContent + "[图片]";
+        }
+        if (note.getSound() != null) {      // 当内容包含语音时
+            alarmContent = alarmContent + "[语音]";
+        }
+        intent.putExtra("noteContent", alarmContent);
+        PendingIntent pi = PendingIntent.getBroadcast(this, alarmSendCode++, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+//        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 2 * 1000, pi);
     }
 }

@@ -9,6 +9,12 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/add_alarm"
+        android:icon="@drawable/ic_baseline_add_alarm_24"
+        android:title="添加提醒"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/delete_note"
         android:icon="@drawable/ic_baseline_delete_outline_24"
         android:title="删除"

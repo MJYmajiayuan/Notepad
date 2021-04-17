@@ -120,7 +120,6 @@ public class NoteDao {
     public List<Note> queryNoteByContent(String noteContent) {
         List<Note> noteList = new ArrayList<>();
         Cursor cursor = db.rawQuery("select * from Note where content like ? order by timestamp", new String[] { "%" + noteContent + "%" });
-
         if (cursor.moveToLast()) {
             do {
                 int id = cursor.getInt(cursor.getColumnIndex("id"));
@@ -131,6 +130,31 @@ public class NoteDao {
                 String sound = cursor.getString(cursor.getColumnIndex("sound"));
                 int tagId = cursor.getInt(cursor.getColumnIndex("tag_id"));
                 Note note = new Note(id, content, time, timestamp, image, sound, tagId);
+                noteList.add(note);
+            } while (cursor.moveToPrevious());
+        }
+        cursor.close();
+        return noteList;
+    }
+
+    /**
+     * 通过标签查找Note
+     * @param tagId 标签id
+     * @return Note列表
+     */
+    public List<Note> queryNoteByTag(int tagId) {
+        List<Note> noteList = new ArrayList<>();
+        Cursor cursor = db.rawQuery("select * from Note where tag_id = ? order by timestamp", new String[] { String.valueOf(tagId) });
+        if (cursor.moveToLast()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                String content = cursor.getString(cursor.getColumnIndex("content"));
+                String time = cursor.getString(cursor.getColumnIndex("time"));
+                long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
+                String image = cursor.getString(cursor.getColumnIndex("image"));
+                String sound = cursor.getString(cursor.getColumnIndex("sound"));
+                int noteTagId = cursor.getInt(cursor.getColumnIndex("tag_id"));
+                Note note = new Note(id, content, time, timestamp, image, sound, noteTagId);
                 noteList.add(note);
             } while (cursor.moveToPrevious());
         }

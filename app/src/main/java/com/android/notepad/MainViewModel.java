@@ -46,6 +46,10 @@ public class MainViewModel extends ViewModel {
         return Repository.getInstance().queryNoteByContent(content);
     }
 
+    public List<Note> queryTagByTag(int tagId) {
+        return Repository.getInstance().queryNoteByTag(tagId);
+    }
+
     public List<Tag> queryTag() {
         return Repository.getInstance().queryTag();
     }
@@ -53,6 +57,7 @@ public class MainViewModel extends ViewModel {
     public void insertTag(Tag tag) {
         Repository.getInstance().insertTag(tag);
     }
+
 
     public void refreshNoteList(Context context) {
 
@@ -73,6 +78,21 @@ public class MainViewModel extends ViewModel {
     public void refreshNoteListBySearch(Context context, String content) {
         noteList.clear();
         noteList.addAll(queryNoteByContent(content));
+        noteLiveData.setValue(noteList);
+
+        noteBitmapMap.clear();
+        for (Note note : noteList) {
+            if (note.getImage() != null) {
+                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+                noteBitmapMap.put(note.getId(), bitmap);
+            }
+        }
+        noteBitmapMapLiveData.setValue(noteBitmapMap);
+    }
+
+    public void refreshNoteListByTag(Context context, int tagId) {
+        noteList.clear();
+        noteList.addAll(queryTagByTag(tagId));
         noteLiveData.setValue(noteList);
 
         noteBitmapMap.clear();

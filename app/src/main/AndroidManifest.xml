@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name=".NotepadApplication"
@@ -14,6 +16,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MaterialComponents.Light.NoActionBar.Bridge">
+
+        <receiver
+            android:name=".broadcast.AlarmReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.notepad.alarm" />
+            </intent-filter>
+
+        </receiver>
+
         <activity
             android:name=".AddTagActivity"
             android:theme="@style/TagTheme" />
@@ -24,7 +37,9 @@
         <activity
             android:name=".ui.edit.RecordActivity"
             android:theme="@style/RecordTheme" />
-        <activity android:name=".ui.edit.EditActivity" />
+        <activity
+            android:name=".ui.edit.EditActivity"
+            android:launchMode="singleTask"/>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

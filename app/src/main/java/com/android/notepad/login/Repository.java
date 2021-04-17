@@ -48,6 +48,10 @@ public class Repository {
         return NoteDao.getInstance().queryNoteByContent(content);
     }
 
+    public List<Note> queryNoteByTag(int tagId) {
+        return NoteDao.getInstance().queryNoteByTag(tagId);
+    }
+
     public List<Tag> queryTag() {
         return TagDao.getInstance().queryTag();
     }

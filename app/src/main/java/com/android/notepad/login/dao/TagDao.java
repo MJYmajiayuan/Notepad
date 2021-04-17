@@ -28,6 +28,12 @@ public class TagDao {
      */
     public void createNoteDatabase(Context context) {
         db = DatabaseUtils.getDatabase(context);
+        Cursor cursor = db.rawQuery("select * from Tag where tag_id = ?", new String[] { String.valueOf(0) });
+        if (!cursor.moveToFirst()) {
+            db.execSQL("insert into Tag (tag_id, tag_name, tag_num) values(?, ?, ?)",
+                    new String[] { "0", "默认标签", "0" });
+        }
+        cursor.close();
     }
 
     /**
