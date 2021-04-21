@@ -18,6 +18,52 @@
         android:id="@+id/paint_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/paint_toolbar" />
+        android:layout_below="@id/paint_toolbar"
+        android:layout_above="@id/color_selector"/>
+
+    <LinearLayout
+        android:id="@+id/color_selector"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@color/white">
+
+        <ImageButton
+            android:id="@+id/color_select_btn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:src="@drawable/icon_color_selector"
+            android:padding="10dp"
+            android:layout_margin="0dp"
+            android:scaleType="centerInside"
+            style="?android:attr/borderlessButtonStyle" />
+
+        <ImageButton
+            android:id="@+id/eraser_btn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:src="@drawable/icon_eraser"
+            android:padding="10dp"
+            android:layout_margin="0dp"
+            android:scaleType="centerInside"
+            style="?android:attr/borderlessButtonStyle" />
+
+        <ImageButton
+            android:id="@+id/reset_paint_btn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:src="@drawable/icon_reset_paint"
+            android:padding="10dp"
+            android:layout_margin="0dp"
+            android:scaleType="centerInside"
+            style="?android:attr/borderlessButtonStyle" />
+
+
+    </LinearLayout>
 
 </RelativeLayout>

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel;
 import com.android.notepad.login.Repository;
 import com.android.notepad.login.model.Note;
 import com.android.notepad.login.model.Tag;
+import com.android.notepad.ui.UiUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,30 +31,61 @@ public class MainViewModel extends ViewModel {
         Repository.getInstance().createNoteDatabase(context);
     }
 
+    /**
+     * 插入记事
+     * @param note
+     */
     public void insertNote(Note note) {
         Repository.getInstance().insertNote(note);
     }
 
+    /**
+     * 查询记事
+     * @return
+     */
     public List<Note> queryNote() {
         return Repository.getInstance().queryNote();
     }
 
+    /**
+     * 通过id查询记事
+     * @param noteId
+     * @return
+     */
     public Note queryNoteById(int noteId) {
         return Repository.getInstance().queryNoteById(noteId);
     }
 
+    /**
+     * 通过内容查询记事
+     * @param content
+     * @return
+     */
     public List<Note> queryNoteByContent(String content) {
         return Repository.getInstance().queryNoteByContent(content);
     }
 
+    /**
+     * 通过标签查询记事
+     * @param tagId
+     * @return
+     */
     public List<Note> queryTagByTag(int tagId) {
         return Repository.getInstance().queryNoteByTag(tagId);
     }
 
+    /**
+     * 查询所有标签
+     * @return
+     */
     public List<Tag> queryTag() {
         return Repository.getInstance().queryTag();
     }
 
+    /**
+     * 插入标签
+     * @param tag
+     */
     public void insertTag(Tag tag) {
         Repository.getInstance().insertTag(tag);
     }
@@ -68,7 +100,8 @@ public class MainViewModel extends ViewModel {
         noteBitmapMap.clear();
         for (Note note : noteList) {
             if (note.getImage() != null) {
-                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+//                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+                Bitmap bitmap = UiUtil.decodeSampledBitmapFromFile(note.getImage(), 200, 200);
                 noteBitmapMap.put(note.getId(), bitmap);
             }
         }
@@ -83,7 +116,8 @@ public class MainViewModel extends ViewModel {
         noteBitmapMap.clear();
         for (Note note : noteList) {
             if (note.getImage() != null) {
-                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+//                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+                Bitmap bitmap = UiUtil.decodeSampledBitmapFromFile(note.getImage(), 200, 200);
                 noteBitmapMap.put(note.getId(), bitmap);
             }
         }
@@ -98,7 +132,8 @@ public class MainViewModel extends ViewModel {
         noteBitmapMap.clear();
         for (Note note : noteList) {
             if (note.getImage() != null) {
-                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+//                Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
+                Bitmap bitmap = UiUtil.decodeSampledBitmapFromFile(note.getImage(), 200, 200);
                 noteBitmapMap.put(note.getId(), bitmap);
             }
         }

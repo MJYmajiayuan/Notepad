@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/add_tag"
-        android:icon="@drawable/ic_baseline_add_24"
+        android:icon="@drawable/icon_add_label"
         android:title="添加标签"
         app:showAsAction="always" />
 

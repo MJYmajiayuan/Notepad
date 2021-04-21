@@ -60,6 +60,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class EditActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -70,6 +71,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     // 用于申请录音权限
     private final int REQUEST_RECORD_AUDIO = 1;
 
+    private Note note = null;   // 全局Note对象
     private Toolbar editToolbar;
     private ImageView imageView;
     private EditText edit;
@@ -123,17 +125,19 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         // 若是个更新操作，将intent中的对象取出
         if ("update".equals(tag)) {
             int noteId = getIntent().getIntExtra("noteId", 1);
-            Note note = Repository.getInstance().queryNoteById(noteId);
+            note = Repository.getInstance().queryNoteById(noteId);
             edit.setText(note.getContent());
             // 若有存储图片则设置imageView
-            if (note.getImage() != null) {
-                // 通过note.getImage()获取文件名，打开文件输入流
-//                FileInputStream inputImage = openFileInput(note.getImage());
-//                Bitmap bitmap = BitmapFactory.decodeStream(inputImage);
+            if (!TextUtils.isEmpty(note.getImage())) {
                 Bitmap bitmap = BitmapFactory.decodeFile(note.getImage());
                 imageView.setImageBitmap(bitmap);
-//                Log.d("EditActivity", "imageView.width = " + imageView.getWidth());
                 UiUtil.adjustImageView(this, imageView, bitmap);
+                String[] imageFilePathArr = note.getImage().split("/");
+                // 若该图片是手绘
+                if ("paint".equals(imageFilePathArr[imageFilePathArr.length - 2])) {
+                    Log.d("EditActivity", "is paint");
+                    imageView.setOnClickListener(this);
+                }
             }
             // 若有录音则显示出来
             if (note.getSound() != null) {
@@ -147,6 +151,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
             timeAlterText.setText("修改时间：" + note.getTime());
+        } else {
+            note = new Note();
         }
 
         // 设置控件的点击事件
@@ -283,6 +289,11 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     mediaPlayer.start();
                 }
                 break;
+            case R.id.image_view:
+                Intent editPaintIntent = new Intent(EditActivity.this, PaintActivity.class);
+                editPaintIntent.putExtra("paintFilePath", note.getImage());
+                startActivityForResult(editPaintIntent, PAINT);
+                break;
         }
     }
 
@@ -393,7 +404,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             if (!TextUtils.isEmpty(edit.getText())
                     || !TextUtils.isEmpty(picFilePath)
                     || !TextUtils.isEmpty(soundFilePath)) {
-                Note note = new Note();
+//                note = new Note();
                 note.setContent(edit.getText().toString());
                 note.setTime(ft.format(date));
                 note.setTimestamp(timestamp);
@@ -408,7 +419,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 //                    Log.d("EditActivity", "insert");
             }
         } else if ("update".equals(tag)) {
-            Note note = Repository.getInstance().queryNoteById(getIntent().getIntExtra("noteId", 0));
+            note = Repository.getInstance().queryNoteById(getIntent().getIntExtra("noteId", 0));
             if (TextUtils.isEmpty(edit.getText())
                     && TextUtils.isEmpty(note.getImage())
                     && TextUtils.isEmpty(note.getSound())) {
@@ -538,16 +549,13 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         calendar.set(Calendar.SECOND, 0);   // 将提醒时间的秒置零，提醒时间只精确到分
         long alarmTime = calendar.getTimeInMillis();    // 提醒时间转化为时间戳
 
-//        alarmReceiver = new AlarmReceiver();
-//        IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction("com.android.notepad.alarm");
         Intent intent = new Intent(EditActivity.this, AlarmReceiver.class); // 设置到广播的intent
         intent.setAction("com.android.notepad.alarm");
 
         // 为广播传递note的id和内容
         int noteId = getIntent().getIntExtra("noteId", 0);
         Log.d("EditActivity", "noteId: " + noteId);
-        Note note = Repository.getInstance().queryNoteById(noteId);
+//        Note note = Repository.getInstance().queryNoteById(noteId);
         intent.putExtra("noteId", noteId);
         String alarmContent = note.getContent();
         if (note.getImage() != null) {      // 当内容包含图片和手绘时
@@ -559,7 +567,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra("noteContent", alarmContent);
         PendingIntent pi = PendingIntent.getBroadcast(this, alarmSendCode++, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-//        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pi);
-        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 2 * 1000, pi);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+//        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 2 * 1000, pi); // 测试用
     }
 }

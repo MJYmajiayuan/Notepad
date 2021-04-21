@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/weight_selector"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:layout_alignParentBottom="true"
+    android:orientation="horizontal"
+    android:gravity="center">
+
+    <com.android.notepad.ui.edit.CircleView
+        android:id="@+id/weight_1"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:radius="1dp"
+        app:paintColor="@color/black" />
+
+    <com.android.notepad.ui.edit.CircleView
+        android:id="@+id/weight_2"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:radius="3dp"
+        app:paintColor="@color/black" />
+
+    <com.android.notepad.ui.edit.CircleView
+        android:id="@+id/weight_3"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:radius="5dp"
+        app:paintColor="@color/black" />
+
+    <com.android.notepad.ui.edit.CircleView
+        android:id="@+id/weight_4"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:radius="8dp"
+        app:paintColor="@color/black" />
+
+    <com.android.notepad.ui.edit.CircleView
+        android:id="@+id/weight_5"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:radius="10dp"
+        app:paintColor="@color/black" />
+
+    <com.android.notepad.ui.edit.CircleView
+        android:id="@+id/weight_6"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:radius="15dp"
+        app:paintColor="@color/black" />
+
+</LinearLayout>

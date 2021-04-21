@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
 
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);   // 创建ViewModel对象
@@ -177,19 +178,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         item.setCheckable(true);
         item.setChecked(true);
-        if (item.getGroupId() == 0) {       // 全部记事
+        if (item.getGroupId() == 0) {       // 点击全部记事按钮
             mainViewModel.refreshNoteList(this);
         } else {
-            if (item.getItemId() == tagList.size() + 1) {
+            if (item.getItemId() == tagList.size() + 1) {   // 点击添加标签按钮
                 Intent intent = new Intent(MainActivity.this, AddTagActivity.class);
                 startActivity(intent);
                 mainDrawerLayout.closeDrawers();
-            } else {
+            } else {    // 点击标签按钮
                 int tagId = tagList.get(item.getItemId() - 1).getTagId();
                 mainViewModel.refreshNoteListByTag(this, tagId);
             }
         }
-        mainDrawerLayout.closeDrawers();
+        mainDrawerLayout.closeDrawers();    // 关闭侧边栏
         return true;
     }
 

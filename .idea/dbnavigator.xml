@@ -25,7 +25,7 @@
     <show-object-properties value="true" />
     <loaded-nodes>
       <connection connection-id="419f7486-76da-4aa0-a59f-1378086e975a">
-        <schema name="main" object-types="table, view" />
+        <schema name="main" object-types="index, view, column, table, dataset trigger, constraint" />
       </connection>
     </loaded-nodes>
   </component>
@@ -96,7 +96,7 @@
           <port value="1234" />
           <database value="database" />
           <files>
-            <file path="F:\Andorid\db\note_store2.db" schema="main" />
+            <file path="F:\Andorid\db\note_store.db" schema="main" />
           </files>
           <type value="NONE" />
           <user value="" />

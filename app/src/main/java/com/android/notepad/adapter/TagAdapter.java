@@ -24,12 +24,12 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView tagImg;
+//        ImageView tagImg;
         TextView tagName;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tagImg = (ImageView) itemView.findViewById(R.id.tag_img);
+//            tagImg = (ImageView) itemView.findViewById(R.id.tag_img);
             tagName = (TextView) itemView.findViewById(R.id.tag_text);
         }
     }
@@ -54,8 +54,11 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
             @Override
             public void onClick(View v) {
                 int position = viewHolder.getAdapterPosition();
+                Log.d("TagAdapter", position + "");
                 Tag tag = tagList.get(position);
+                Log.d("TagAdapter", tag.getTagName());
                 note.setTagId(tag.getTagId());          // 设置记事标签
+                Log.d("TagAdapter", note.getId() + "");
                 tag.setTagNum(tag.getTagNum() + 1);     // 标签下记事数+1
                 new Thread(new Runnable() {
                     @Override
@@ -75,9 +78,8 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Tag tag = tagList.get(position);
-        holder.tagImg.setImageResource(R.drawable.icon_label);
+//        holder.tagImg.setImageResource(R.drawable.icon_label);
         holder.tagName.setText(tag.getTagName());
-
     }
 
     @Override

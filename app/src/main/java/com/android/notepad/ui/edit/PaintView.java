@@ -20,29 +20,24 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Runnable {
 
-    // SurfaceHolder实例
-    private SurfaceHolder mSurfaceHolder;
-    // Canvas对象
-    private Canvas mCanvas;
-    // 控制子线程是否运行
-    private boolean startDraw;
-    // Path实例
-    private Path mPath = new Path();
-    // Paint实例
-    private Paint mPaint = new Paint();
-    // 用于保存的Canvas对象
-    private Canvas svCanvas;
-    // 用于保存的Bitmap对象
-    private Bitmap mBitmap = null;
-    // 标记是否绘画过
-    private boolean beDraw = false;
-    // 设置保存的图片文件
-    private File paintFile;
-    // 画图线程
-    private Thread drawThread;
+    private SurfaceHolder mSurfaceHolder;   // SurfaceHolder实例
+    private Canvas mCanvas;                 // Canvas对象
+    private boolean startDraw;              // 控制子线程是否运行
+    private Paint mPaint = new Paint();     // Paint实例
+    private Canvas svCanvas;                // 用于保存的Canvas对象
+    private Bitmap mBitmap = null;          // 用于保存的Bitmap对象
+    private boolean beDraw = false;         // 标记是否绘画过
+    private File paintFile;                 // 设置保存的图片文件
+    private Thread drawThread;              // 画图线程
+    private static int paintColor = Color.BLACK;    // 画笔颜色
+    private static float paintStroke = 0;
+    private List<Path> pathList = new ArrayList<>();    // 路径列表
+    private int pathListLen = -1;           // 路径长度
 
     public PaintView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -52,6 +47,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
+
+        // 初始化用于保存的画布
+        initSvCanvas();
         // startDraw置为true，线程运行
         startDraw = true;
         drawThread = new Thread(this);
@@ -75,10 +73,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 beDraw = true;  // 表示画布被修改过
-                mPath.moveTo(x, y);
+                Path path = new Path();
+                path.moveTo(x, y);
+                pathList.add(path);
+                pathListLen++;
                 break;
             case MotionEvent.ACTION_MOVE:
-                mPath.lineTo(x, y);
+                pathList.get(pathListLen).lineTo(x, y);
                 break;
             case MotionEvent.ACTION_UP:
                 break;
@@ -88,7 +89,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
 
     @Override
     public void run() {
-        initSvCanvas();
         while (startDraw) {
             // 绘制
             draw();
@@ -132,10 +132,15 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
      * 初始化用于保存的画布
      */
     private void initSvCanvas() {
-        mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        svCanvas = new Canvas(mBitmap);
-        // 先把画布置为白色
-        svCanvas.drawColor(Color.WHITE);
+        if (mBitmap != null) {
+            svCanvas = new Canvas(mBitmap);
+        } else {
+            mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+            svCanvas = new Canvas(mBitmap);
+            // 先把画布置为白色
+            svCanvas.drawColor(Color.WHITE);
+        }
+
     }
 
     /**
@@ -144,13 +149,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
     private void draw() {
         try {
             mCanvas = mSurfaceHolder.lockCanvas();
-            // 将画布填充为白色
-            mCanvas.drawColor(Color.WHITE);
+            // 将画布填充为上次的画布，在上次的画布上继续画
+            mCanvas.drawBitmap(mBitmap, 0, 0, null);
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(UiUtil.px2dip(getContext(), 5));
-            mPaint.setColor(Color.BLACK);
-            mCanvas.drawPath(mPath, mPaint);
-            svCanvas.drawPath(mPath, mPaint);
+            mPaint.setColor(paintColor);
+            mCanvas.drawPath(pathList.get(pathListLen), mPaint);
+            svCanvas.drawPath(pathList.get(pathListLen), mPaint);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -209,15 +214,55 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Ru
     }
 
     /**
+     * 设置Bitmap
+     * @param bitmap
+     */
+    public void setBitmap(Bitmap bitmap) {
+        mBitmap = bitmap;
+        svCanvas = new Canvas(bitmap);
+    }
+
+    /**
      * 重置画布
      */
     public void reset() {
-        mPath.reset();
+        for (Path path : pathList) {
+            path.reset();
+            svCanvas.drawColor(Color.WHITE);
+            beDraw = false;
+        }
     }
 
+    /**
+     * 获取保存的文件路径
+     * @return
+     */
     public String getPaintFilePath() {
         return paintFile.getAbsolutePath();
     }
 
+    /**
+     * 更改颜色
+     * @param color 颜色
+     */
+    public void changeColor(int color) {
+        startDraw = false;
+        try {
+            drawThread.join();
+            Path path = new Path();
+            pathList.add(path);
+            pathListLen++;
+            drawThread = new Thread(this);
+            paintColor = color;
+            startDraw = true;
+            drawThread.start();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void changeWeight(float weight) {
+
+    }
 
 }
